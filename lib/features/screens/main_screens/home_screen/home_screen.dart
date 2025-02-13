@@ -19,6 +19,7 @@ import 'package:course_management_project/widgets/custom_loading_indicator.dart'
 import 'package:course_management_project/widgets/scaffold_background_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -201,25 +202,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                 },
                               ),
                               const SizedBox(height: 10),
-                              StaggeredGrid.count(
-                                crossAxisCount: 2,
-                                children: [
-                                  ...List.generate(
-                                    5,
-                                    (index) {
-                                      return Container(
-                                        width: getMediaQueryWidth(context),
-                                        height: 120,
-                                        margin: const EdgeInsets.all(5),
-                                        decoration: BoxDecoration(
-                                          color: kBlackColor,
-                                          borderRadius: BorderRadius.circular(10),
-                                        ),
-                                        child: Center(child: Text('سلام')),
-                                      );
-                                    },
-                                  ),
-                                ],
+                              Padding(
+                                padding: const EdgeInsets.all(6),
+                                child: StaggeredGrid.count(
+                                  crossAxisCount: 2,
+                                  mainAxisSpacing: 10,
+                                  crossAxisSpacing: 10,
+                                  children: [
+                                    ...List.generate(
+                                      5,
+                                      (index) {
+                                        return const HomeReportCard();
+                                      },
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
@@ -245,10 +242,58 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
+class HomeReportCard extends StatelessWidget {
+  const HomeReportCard({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 120.h,
+      child: Card(
+        margin: const EdgeInsets.all(5),
+        color: kBlueCustomColor.withOpacity(0.3),
+        elevation: 0,
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'تعداد نمرات روزنه',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: kBlueCustomColor.withOpacity(0.7),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Text('13', style: Theme.of(context).textTheme.titleMedium),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: kBlueCustomColor.withOpacity(0.7),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    child: Icon(Icons.book, size: 26.sp),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class HomeDrawer extends StatelessWidget {
-  const HomeDrawer({
-    super.key,
-  });
+  const HomeDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -261,7 +306,7 @@ class HomeDrawer extends StatelessWidget {
             children: [
               Container(
                 width: getMediaQueryWidth(context),
-                height: 170,
+                height: 170.h,
                 padding: const EdgeInsets.symmetric(horizontal: 15),
                 decoration: const BoxDecoration(
                   image: DecorationImage(
@@ -347,7 +392,50 @@ class HomeDrawer extends StatelessWidget {
             tileColor: kRedColor,
             title: 'خروج از حساب',
             trailing: Icons.keyboard_arrow_left_rounded,
-            onTap: () {},
+            onTap: () {
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    return BlocConsumer<AuthBloc, AuthState>(
+                      listener: (context, state) {
+                        if (state is AuthFailure) {
+                          FlushbarPackage.showErrorFlushbar(context, 'خطایی در هنگام خروج از حساب رخ داده است!');
+                        } else if (state is AuthSuccess) {
+                          Navigator.pushNamedAndRemoveUntil(context, LoginScreen.id, (route) => true);
+                        }
+                      },
+                      builder: (context, state) {
+                        return AlertDialog(
+                          content: Text(
+                            'از حساب کاربری خود خارج میشوید؟',
+                            style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              child: const Text('خیر'),
+                            ),
+                            const SizedBox(width: 10),
+                            TextButton(
+                              onPressed: () {
+                                if (state is! LoggingOut) {
+                                  context.read<AuthBloc>().add(
+                                        LogoutRequested(id: context.read<UserProvider>().userModel!.id),
+                                      );
+                                } else {
+                                  HapticFeedback.mediumImpact();
+                                }
+                              },
+                              child: state is LoggingOut ? const CupertinoActivityIndicator() : const Text('بله'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  });
+            },
           ),
           const SizedBox(height: 20),
         ],

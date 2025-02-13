@@ -14,6 +14,30 @@ ThemeData lightTheme(BuildContext context) {
         TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
       },
     ),
+    cardTheme: CardTheme(
+      color: kWhiteColor,
+      elevation: 10,
+      shadowColor: kBlackColor26,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
+    ),
+    dialogTheme: DialogTheme(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      actionsPadding: const EdgeInsets.only(bottom: 10, left: 10),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: ButtonStyle(
+        shape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+        ),
+        textStyle: WidgetStatePropertyAll(
+          Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
+        ),
+      ),
+    ),
     appBarTheme: AppBarTheme(
       backgroundColor: kBlueCustomColor,
       systemOverlayStyle: SystemUiOverlayStyle.light,
@@ -46,6 +70,31 @@ ThemeData darkTheme(BuildContext context) {
         TargetPlatform.android: CupertinoPageTransitionsBuilder(),
         TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
       },
+    ),
+    dialogTheme: DialogTheme(
+      backgroundColor: kGreyColor900,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      actionsPadding: const EdgeInsets.only(bottom: 10, left: 10),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: ButtonStyle(
+        shape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+        ),
+        textStyle: WidgetStatePropertyAll(
+          Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold),
+        ),
+      ),
+    ),
+    cardTheme: CardTheme(
+      color: kGreyColor700,
+      elevation: 10,
+      shadowColor: kGreyColor.withOpacity(0.1),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
     ),
     appBarTheme: AppBarTheme(
       backgroundColor: kBlueCustomColor,

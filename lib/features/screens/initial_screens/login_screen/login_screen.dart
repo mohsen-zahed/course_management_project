@@ -9,6 +9,7 @@ import 'package:course_management_project/utils/app_theme.dart';
 import 'package:course_management_project/widgets/custom_text_field.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -176,10 +177,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           onPressed: state is! AuthenticatingUser
                               ? () {
                                   if (_emailController.text.toString().trim().isEmpty) {
+                                    HapticFeedback.heavyImpact();
                                     FlushbarPackage.showErrorFlushbar(context, 'ایمیل را وارد کنید!');
                                   } else if (!_emailController.text.toString().trim().endsWith('@gmail.com')) {
+                                    HapticFeedback.heavyImpact();
                                     FlushbarPackage.showErrorFlushbar(context, 'ایمیل معتبر نمیباشد');
                                   } else if (_passwordController.text.toString().trim().isEmpty) {
+                                    HapticFeedback.heavyImpact();
                                     FlushbarPackage.showErrorFlushbar(context, 'رمز عبور را وارد کنید');
                                   } else {
                                     context.read<AuthBloc>().add(
@@ -190,7 +194,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                         );
                                   }
                                 }
-                              : null,
+                              : () {
+                                  HapticFeedback.heavyImpact();
+                                },
                           child: state is AuthenticatingUser
                               ? const CupertinoActivityIndicator(color: kWhiteColor)
                               : Text(
