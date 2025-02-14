@@ -4,11 +4,12 @@ import 'package:course_management_project/config/constants/colors/colors.dart';
 import 'package:course_management_project/config/constants/images_paths.dart';
 import 'package:course_management_project/features/data/blocs/auth_bloc/auth_bloc.dart';
 import 'package:course_management_project/features/data/blocs/home_bloc/home_bloc.dart';
+import 'package:course_management_project/features/data/models/home_info_model.dart';
 import 'package:course_management_project/features/data/providers/user_provider.dart';
 import 'package:course_management_project/features/screens/initial_screens/login_screen/login_screen.dart';
 import 'package:course_management_project/features/screens/main_screens/home_screen/notifiers/home_notifiers.dart';
 import 'package:course_management_project/features/screens/main_screens/home_screen/widgets/home_appbar.dart';
-import 'package:course_management_project/features/screens/main_screens/students_screen/students_screen.dart';
+import 'package:course_management_project/features/screens/main_screens/home_screen/widgets/home_drawer.dart';
 import 'package:course_management_project/helpers/exit_app_helper.dart';
 import 'package:course_management_project/helpers/theme_helpers.dart';
 import 'package:course_management_project/packages/flushbar_package/flushbar_package.dart';
@@ -19,7 +20,6 @@ import 'package:course_management_project/widgets/custom_loading_indicator.dart'
 import 'package:course_management_project/widgets/scaffold_background_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
@@ -113,106 +113,19 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Column(
                             children: [
                               const SizedBox(height: 10),
-                              ValueListenableBuilder(
-                                valueListenable: HomeNotifiers.bannerValueNotifier,
-                                builder: (context, adIndicator, child) {
-                                  return Stack(
-                                    children: [
-                                      AspectRatio(
-                                        aspectRatio: 2 / 1,
-                                        child: SizedBox(
-                                          width: getMediaQueryWidth(context),
-                                          child: CarouselSlider.builder(
-                                            itemCount: adBanners.length,
-                                            itemBuilder: (context, index, realIndex) {
-                                              return CachedNetworkImage(
-                                                imageUrl: adBanners[index],
-                                                fit: BoxFit.cover,
-                                                placeholder: (context, url) {
-                                                  return SizedBox(
-                                                    width: getMediaQueryWidth(context),
-                                                    child: const Center(
-                                                      child: CupertinoActivityIndicator(),
-                                                    ),
-                                                  );
-                                                },
-                                                errorWidget: (context, url, error) {
-                                                  return SizedBox(
-                                                    width: getMediaQueryWidth(context),
-                                                    child: Center(
-                                                      child: Icon(
-                                                        Icons.wifi_off_rounded,
-                                                        color: isThemeLight(context) ? kGreyColor300 : kGreyColor700,
-                                                      ),
-                                                    ),
-                                                  );
-                                                },
-                                              );
-                                            },
-                                            options: CarouselOptions(
-                                              // aspectRatio: 2 / 1,
-                                              autoPlayAnimationDuration: const Duration(seconds: 1),
-                                              autoPlayInterval: const Duration(seconds: 10),
-                                              animateToClosest: true,
-                                              viewportFraction: 1,
-                                              onPageChanged: (index, reason) {
-                                                HomeNotifiers.bannerValueNotifier.value = index;
-                                              },
-                                              enlargeCenterPage: true,
-                                              autoPlayCurve: Curves.fastOutSlowIn,
-                                              autoPlay: true,
-                                              initialPage: adIndicator,
-                                              scrollDirection: Axis.horizontal,
-                                              // autoPlayCurve: Curves.easeInOut,
-                                              enlargeFactor: 0.2,
-                                              enableInfiniteScroll: true,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      Positioned(
-                                        right: 0,
-                                        left: 0,
-                                        bottom: 5,
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            ...List.generate(
-                                              adBanners.length,
-                                              (index) {
-                                                return AnimatedContainer(
-                                                  duration: const Duration(milliseconds: 200),
-                                                  width: adIndicator == index ? 25 : 9,
-                                                  height: 6,
-                                                  margin: const EdgeInsets.only(right: 5),
-                                                  decoration: BoxDecoration(
-                                                    borderRadius: BorderRadius.circular(100),
-                                                    color: isThemeLight(context)
-                                                        ? kBlueCustomColor
-                                                        : kBlueCustomColor.withOpacity(0.7),
-                                                  ),
-                                                );
-                                              },
-                                            )
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              ),
+                              CustomCarouselSlider(bannersList: adBanners),
                               const SizedBox(height: 10),
                               Padding(
                                 padding: const EdgeInsets.all(6),
                                 child: StaggeredGrid.count(
-                                  crossAxisCount: 2,
-                                  mainAxisSpacing: 10,
-                                  crossAxisSpacing: 10,
+                                  crossAxisCount: 3,
+                                  mainAxisSpacing: 5,
+                                  crossAxisSpacing: 5,
                                   children: [
                                     ...List.generate(
-                                      5,
+                                      infoList.length,
                                       (index) {
-                                        return const HomeReportCard();
+                                        return HomeReportCard(infoModel: infoList[index]);
                                       },
                                     ),
                                   ],
@@ -242,203 +155,184 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class HomeReportCard extends StatelessWidget {
-  const HomeReportCard({super.key});
+class CustomCarouselSlider extends StatelessWidget {
+  const CustomCarouselSlider({
+    super.key,
+    required this.bannersList,
+  });
+
+  final List<String> bannersList;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 120.h,
-      child: Card(
-        margin: const EdgeInsets.all(5),
-        color: kBlueCustomColor.withOpacity(0.3),
-        elevation: 0,
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'تعداد نمرات روزنه',
-                style: Theme.of(context).textTheme.titleLarge,
+    return ValueListenableBuilder(
+      valueListenable: HomeNotifiers.bannerValueNotifier,
+      builder: (context, adIndicator, child) {
+        return Stack(
+          children: [
+            AspectRatio(
+              aspectRatio: 2 / 1,
+              child: SizedBox(
+                width: getMediaQueryWidth(context),
+                child: bannersList.isNotEmpty
+                    ? CarouselSlider.builder(
+                        itemCount: bannersList.length,
+                        itemBuilder: (context, index, realIndex) {
+                          return CachedNetworkImage(
+                            imageUrl: bannersList[index],
+                            fit: BoxFit.cover,
+                            imageBuilder: (context, imageProvider) {
+                              return Container(
+                                margin: const EdgeInsets.symmetric(horizontal: 10),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
+                                ),
+                              );
+                            },
+                            placeholder: (context, url) {
+                              return SizedBox(
+                                width: getMediaQueryWidth(context),
+                                child: const Center(
+                                  child: CupertinoActivityIndicator(),
+                                ),
+                              );
+                            },
+                            errorWidget: (context, url, error) {
+                              return SizedBox(
+                                width: getMediaQueryWidth(context),
+                                child: Center(
+                                  child: Icon(
+                                    Icons.wifi_off_rounded,
+                                    color: isThemeLight(context) ? kGreyColor300 : kGreyColor700,
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                        options: CarouselOptions(
+                          // aspectRatio: 2 / 1,
+                          autoPlayAnimationDuration: const Duration(seconds: 1),
+                          autoPlayInterval: const Duration(seconds: 10),
+                          animateToClosest: true,
+                          viewportFraction: 1,
+                          onPageChanged: (index, reason) {
+                            HomeNotifiers.bannerValueNotifier.value = index;
+                          },
+                          enlargeCenterPage: true,
+                          autoPlayCurve: Curves.fastOutSlowIn,
+                          autoPlay: true,
+                          initialPage: adIndicator,
+                          scrollDirection: Axis.horizontal,
+                          // autoPlayCurve: Curves.easeInOut,
+                          enlargeFactor: 0.2,
+                          enableInfiniteScroll: true,
+                        ),
+                      )
+                    : const SizedBox(),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            ),
+            Positioned(
+              right: 0,
+              left: 0,
+              bottom: 5,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      color: kBlueCustomColor.withOpacity(0.7),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Text('13', style: Theme.of(context).textTheme.titleMedium),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      color: kBlueCustomColor.withOpacity(0.7),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Icon(Icons.book, size: 26.sp),
-                  ),
+                  ...List.generate(
+                    bannersList.length,
+                    (index) {
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: adIndicator == index ? 25 : 9,
+                        height: 6,
+                        margin: const EdgeInsets.only(right: 5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(100),
+                          color: isThemeLight(context) ? kBlueCustomColor : kBlueCustomColor.withOpacity(0.7),
+                        ),
+                      );
+                    },
+                  )
                 ],
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
 
-class HomeDrawer extends StatelessWidget {
-  const HomeDrawer({super.key});
+List<HomeInfoModel> infoList = [
+  const HomeInfoModel(
+    image: ImagesPaths.loanIconPng,
+    title: 'مجموع باقی داری',
+    value: '1200',
+  ),
+  const HomeInfoModel(
+    image: ImagesPaths.lessonIconPng,
+    title: 'مجموع صنوف',
+    value: '3',
+  ),
+  const HomeInfoModel(
+    image: ImagesPaths.gradeIconPng,
+    title: 'مجموع نمرات روزانه',
+    value: '86',
+  ),
+  const HomeInfoModel(
+    image: ImagesPaths.reviewIconPng,
+    title: 'تعداد نظریات',
+    value: '31',
+  ),
+];
+
+class HomeReportCard extends StatelessWidget {
+  const HomeReportCard({super.key, required this.infoModel});
+  final HomeInfoModel infoModel;
 
   @override
   Widget build(BuildContext context) {
-    return Drawer(
-      width: 250.w,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
-      child: Column(
-        children: [
-          Stack(
-            children: [
-              Container(
-                width: getMediaQueryWidth(context),
-                height: 170.h,
-                padding: const EdgeInsets.symmetric(horizontal: 15),
-                decoration: const BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage(ImagesPaths.wallpaperJpg),
-                    fit: BoxFit.cover,
-                  ),
-                ),
+    return Card(
+      color: kBlueCustomColor.withOpacity(0.3),
+      elevation: 0,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Image.asset(infoModel.image, height: sizeConstants.imageSmall),
+            const SizedBox(height: 15),
+            Container(
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                color: kBlueCustomColor.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(5),
               ),
-              Positioned.fill(
-                child: Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                      colors: [
-                        Color.fromARGB(150, 0, 0, 0), // Faded black (with alpha channel)
-                        kTransparentColor,
-                      ],
-                    ),
-                  ),
-                ),
+              alignment: AlignmentDirectional.centerStart,
+              child: Text(
+                infoModel.title,
+                style: Theme.of(context).textTheme.bodyMedium,
               ),
-              Positioned.fill(
-                child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            // showDialog(
-                            //     context: context,
-                            //     builder: (context) {
-                            //       return const UserInfoBox();
-                            //     });
-                          },
-                          child: CircleAvatar(
-                            backgroundImage: const AssetImage(ImagesPaths.profileDemoJpeg),
-                            radius: 36.w,
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          context.read<UserProvider>().userModel!.name,
-                          style: Theme.of(context).textTheme.bodyMedium!.copyWith(color: kWhiteColor),
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          context.read<UserProvider>().userModel!.email,
-                          style: Theme.of(context).textTheme.bodySmall!.copyWith(color: kWhiteColor),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                color: kBlueCustomColor.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(5),
               ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          CustomListTile(
-            leading: Icons.people_alt_rounded,
-            tileColor: kBlueColor,
-            title: 'لیست شاگردان',
-            trailing: Icons.keyboard_arrow_left_rounded,
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, StudentsScreen.id);
-            },
-          ),
-          const SizedBox(height: 10),
-          CustomListTile(
-            leading: Icons.newspaper_rounded,
-            tileColor: kBlueColor,
-            title: 'آخرین اخبار',
-            trailing: Icons.keyboard_arrow_left_rounded,
-            onTap: () {},
-          ),
-          const SizedBox(height: 30),
-          CustomListTile(
-            leading: Icons.logout_rounded,
-            tileColor: kRedColor,
-            title: 'خروج از حساب',
-            trailing: Icons.keyboard_arrow_left_rounded,
-            onTap: () {
-              showDialog(
-                  context: context,
-                  builder: (context) {
-                    return BlocConsumer<AuthBloc, AuthState>(
-                      listener: (context, state) {
-                        if (state is AuthFailure) {
-                          FlushbarPackage.showErrorFlushbar(context, 'خطایی در هنگام خروج از حساب رخ داده است!');
-                        } else if (state is AuthSuccess) {
-                          Navigator.pushNamedAndRemoveUntil(context, LoginScreen.id, (route) => true);
-                        }
-                      },
-                      builder: (context, state) {
-                        return AlertDialog(
-                          content: Text(
-                            'از حساب کاربری خود خارج میشوید؟',
-                            style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: const Text('خیر'),
-                            ),
-                            const SizedBox(width: 10),
-                            TextButton(
-                              onPressed: () {
-                                if (state is! LoggingOut) {
-                                  context.read<AuthBloc>().add(
-                                        LogoutRequested(id: context.read<UserProvider>().userModel!.id),
-                                      );
-                                } else {
-                                  HapticFeedback.mediumImpact();
-                                }
-                              },
-                              child: state is LoggingOut ? const CupertinoActivityIndicator() : const Text('بله'),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  });
-            },
-          ),
-          const SizedBox(height: 20),
-        ],
+              alignment: Alignment.center,
+              child: Text(
+                infoModel.value,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

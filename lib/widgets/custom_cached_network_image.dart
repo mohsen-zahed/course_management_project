@@ -12,12 +12,14 @@ class CustomCachedNetworkImage extends StatelessWidget {
     this.height,
     this.onTap,
     this.borderColor,
+    this.shape,
   });
   final String imageUrl;
   final BoxFit? boxFit;
   final double? height;
   final VoidCallback? onTap;
   final Color? borderColor;
+  final BoxShape? shape;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +36,7 @@ class CustomCachedNetworkImage extends StatelessWidget {
             width: height ?? sizeConstants.avatarSmallMed,
             height: height ?? sizeConstants.avatarSmallMed,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
+              shape: shape ?? BoxShape.circle,
               border: Border.all(color: borderColor ?? kWhiteColor, width: 2),
               image: DecorationImage(image: imageProvider, fit: boxFit ?? BoxFit.cover),
             ),
@@ -46,7 +48,7 @@ class CustomCachedNetworkImage extends StatelessWidget {
             height: height ?? 60,
             decoration: BoxDecoration(
               color: kGreyColor300,
-              shape: BoxShape.circle,
+              shape: shape ?? BoxShape.circle,
             ),
             child: const CupertinoActivityIndicator(),
           );

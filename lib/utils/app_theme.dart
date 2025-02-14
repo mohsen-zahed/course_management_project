@@ -283,6 +283,7 @@ class SizeConstants {
   double titleLarge = 22.0.sp;
 
   // Icon Sizes
+  double iconXSmall = 12.0.w;
   double iconSmall = 16.0.w;
   double iconMedium = 24.0.w;
   double iconLarge = 32.0.w;
@@ -301,6 +302,7 @@ class SizeConstants {
   // double imageSmallMedium = 60.0.w;
   double imageMedium = 100.0.w;
   double imageLarge = 150.0.w;
+  double imageLargeMed = 170.0.w;
   double imageXLarge = 200.0.w;
   double imageXXLarge = 250.0.w;
 

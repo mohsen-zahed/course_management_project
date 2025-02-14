@@ -16,6 +16,7 @@ import 'package:course_management_project/features/screens/main_screens/daily_gr
 import 'package:course_management_project/features/screens/main_screens/home_screen/home_screen.dart';
 import 'package:course_management_project/features/screens/main_screens/grades_details_screen/grades_details_screen.dart';
 import 'package:course_management_project/config/l10n/l10n.dart';
+import 'package:course_management_project/features/screens/main_screens/latest_news_screen/latest_news_screen.dart';
 import 'package:course_management_project/features/screens/main_screens/students_screen/students_screen.dart';
 import 'package:course_management_project/features/screens/main_screens/time_table_screen/time_table_screen.dart';
 import 'package:course_management_project/features/screens/main_screens/transactions_details_screen/transactions_details_screen.dart';
@@ -32,7 +33,7 @@ import 'package:provider/provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations([
+  await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
@@ -99,6 +100,7 @@ class MyApp extends StatelessWidget {
                     FullImageWidget.id: (context) => const FullImageWidget(imagePath: ''),
                     StudentsScreen.id: (context) => const StudentsScreen(),
                     TimeTableScreen.id: (context) => const TimeTableScreen(studentId: 0, studentName: ''),
+                    LatestNewsScreen.id: (context) => const LatestNewsScreen(),
                   },
                   themeMode: ThemeMode.system,
                   home: const SplashScreen(),
