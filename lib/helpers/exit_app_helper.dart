@@ -9,9 +9,12 @@ class ExitAppHandler {
   static const int _exitThresholdTimeInSeconds = 3; // Time threshold in seconds for double press
 
   // Function to handle back press
-  static Future<void> handleExitApp(BuildContext context) async {
+  static Future<void> handleExitApp(BuildContext context, GlobalKey<ScaffoldState> scaffoldKey) async {
     final DateTime currentTime = DateTime.now();
 
+    if (scaffoldKey.currentState!.isDrawerOpen) {
+      scaffoldKey.currentState!.closeDrawer();
+    }
     // Reset back press count if the time difference exceeds the threshold
     if (currentTime.difference(_firstBackPressTime).inSeconds > _exitThresholdTimeInSeconds) {
       _backPressCount = 0; // Reset back press count if the user takes too long

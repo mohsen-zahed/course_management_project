@@ -1,10 +1,9 @@
 import 'package:course_management_project/config/constants/colors/colors.dart';
 import 'package:course_management_project/config/constants/images_paths.dart';
-import 'package:course_management_project/features/screens/main_screens/home_screen/home_screen.dart';
 import 'package:course_management_project/utils/app_theme.dart';
 import 'package:course_management_project/utils/media_query.dart';
 import 'package:course_management_project/widgets/custom_cached_network_image.dart';
-import 'package:course_management_project/widgets/scaffold_background_image.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -38,7 +37,7 @@ class LatestNewsScreen extends StatelessWidget {
                   SizedBox(
                     width: double.maxFinite,
                     height: getMediaQueryHeight(context),
-                    child: CustomCachedNetworkImage(
+                    child: const CustomCachedNetworkImage(
                       shape: BoxShape.rectangle,
                       boxFit: BoxFit.cover,
                       imageUrl:
@@ -47,7 +46,7 @@ class LatestNewsScreen extends StatelessWidget {
                   ),
                   Positioned(
                     child: Container(
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
@@ -67,7 +66,7 @@ class LatestNewsScreen extends StatelessWidget {
                 physics: const BouncingScrollPhysics(),
                 itemCount: 10,
                 itemBuilder: (context, index) {
-                  return PostWidget();
+                  return const PostWidget();
                 },
                 separatorBuilder: (context, index) {
                   return Container(
@@ -144,7 +143,7 @@ class PostWidget extends StatelessWidget {
           Container(
             width: getMediaQueryWidth(context),
             height: 350.h,
-            child: CustomCachedNetworkImage(
+            child: const CustomCachedNetworkImage(
               imageUrl:
                   'https://img.freepik.com/free-photo/person-holding-speech-official-event_23-2151054241.jpg?t=st=1739470577~exp=1739474177~hmac=a92492c99d8246228d94b4b8213636f4e73268c62ef5d51dc3d4b985c4807fa0&w=360',
               shape: BoxShape.rectangle,
@@ -164,12 +163,12 @@ class PostWidget extends StatelessWidget {
                       color: kGreyColor100,
                       borderRadius: BorderRadius.circular(5),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Icon(Icons.thumb_up_alt_rounded),
-                        const SizedBox(width: 4),
+                        SizedBox(width: 4),
                         Text('لایک'),
                       ],
                     ),
@@ -181,7 +180,7 @@ class PostWidget extends StatelessWidget {
                     borderRadius: BorderRadius.circular(5),
                     color: kGreyColor100,
                   ),
-                  child: Text('1.5k'),
+                  child: const Text('1.5k'),
                 ),
               ],
             ),
@@ -210,25 +209,31 @@ class _ExpandableTextState extends State<ExpandableText> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          widget.text,
-          maxLines: !_isExpanded ? null : widget.maxLines, // Limit lines when collapsed
-          overflow: TextOverflow.ellipsis, // Add "..." at the end if text overflows
-          style: Theme.of(context).textTheme.bodyMedium,
+        RichText(
           textAlign: TextAlign.justify,
-        ),
-        if (widget.text.length > widget.maxLines * 20) // Adjust the condition based on your content length
-          TextButton(
-            onPressed: () {
-              setState(() {
-                _isExpanded = !_isExpanded; // Toggle between expanded/collapsed
-              });
-            },
-            child: Text(
-              _isExpanded ? 'Show less' : 'Show more',
-              style: TextStyle(color: Colors.blue),
-            ),
+          text: TextSpan(
+            style: Theme.of(context).textTheme.bodyMedium,
+            children: [
+              TextSpan(
+                text: widget.text.length > (widget.maxLines * 20) && !_isExpanded
+                    ? widget.text.substring(0, widget.maxLines * 10)
+                    : widget.text,
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              if (widget.text.length > (widget.maxLines * 20))
+                TextSpan(
+                  text: _isExpanded ? '...نمایش کمتر' : ' ...نمایش بیشتر',
+                  style: Theme.of(context).textTheme.bodySmall!.copyWith(color: kBlueColor),
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () {
+                      setState(() {
+                        _isExpanded = !_isExpanded; //
+                      });
+                    },
+                ),
+            ],
           ),
+        ),
       ],
     );
   }
