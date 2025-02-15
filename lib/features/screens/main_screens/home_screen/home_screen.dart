@@ -9,6 +9,7 @@ import 'package:course_management_project/features/screens/main_screens/home_scr
 import 'package:course_management_project/features/screens/main_screens/home_screen/widgets/home_drawer.dart';
 import 'package:course_management_project/features/screens/main_screens/home_screen/widgets/home_report_card.dart';
 import 'package:course_management_project/helpers/exit_app_helper.dart';
+import 'package:course_management_project/helpers/helper_functions.dart';
 import 'package:course_management_project/packages/carousel_slider_package/carousel_slider_package.dart';
 import 'package:course_management_project/packages/flushbar_package/flushbar_package.dart';
 import 'package:course_management_project/packages/dio_package/status_codes.dart';
@@ -96,7 +97,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: PopScope(
                       canPop: false,
                       onPopInvoked: (didPop) async {
-                        await ExitAppHandler.handleExitApp(context, _scaffoldKey);
+                        if (_scaffoldKey.currentState!.isDrawerOpen) {
+                          _scaffoldKey.currentState!.closeDrawer();
+                        } else {
+                          await ExitAppHandler.handleExitApp(context);
+                        }
                       },
                       child: RefreshIndicator(
                         onRefresh: () async {
@@ -110,18 +115,23 @@ class _HomeScreenState extends State<HomeScreen> {
                               const SizedBox(height: 10),
                               Padding(
                                 padding: const EdgeInsets.all(6),
-                                child: StaggeredGrid.count(
-                                  crossAxisCount: 3,
-                                  mainAxisSpacing: 5,
-                                  crossAxisSpacing: 5,
-                                  children: [
-                                    ...List.generate(
-                                      infoList.length,
-                                      (index) {
-                                        return HomeReportCard(infoModel: infoList[index]);
-                                      },
-                                    ),
-                                  ],
+                                child: BlocConsumer<HomeBloc, HomeState>(
+                                  listener: (context, state) {},
+                                  builder: (context, state) {
+                                    return StaggeredGrid.count(
+                                      crossAxisCount: 2,
+                                      mainAxisSpacing: 5,
+                                      crossAxisSpacing: 5,
+                                      children: [
+                                        ...List.generate(
+                                          infoList.length,
+                                          (index) {
+                                            return HomeReportCard(infoModel: infoList[index]);
+                                          },
+                                        ),
+                                      ],
+                                    );
+                                  },
                                 ),
                               ),
                             ],
@@ -149,10 +159,10 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 List<HomeInfoModel> infoList = [
-  const HomeInfoModel(
+  HomeInfoModel(
     image: ImagesPaths.loanIconPng,
     title: 'مجموع باقی داری',
-    value: '1200',
+    value: HelperFunctions.formatCurrencyAfghani(double.parse('1200')),
   ),
   const HomeInfoModel(
     image: ImagesPaths.lessonIconPng,

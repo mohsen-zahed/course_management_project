@@ -3,9 +3,10 @@ import 'package:shamsi_date/shamsi_date.dart';
 
 class DateFormatters {
   const DateFormatters._();
-  static String convertToShamsiWithDayName(String gregorianDate, {bool? hideDay = false}) {
+  static String convertToShamsiWithDayName(String gregorianDate, {bool? hideDay = false, bool? replaceSymbol}) {
     try {
-      final normalizedDate = gregorianDate.replaceAll(RegExp(r'[-/.]'), ' ').trim();
+      final simplifiedDate = gregorianDate.split(RegExp('T'))[0];
+      final normalizedDate = simplifiedDate.replaceAll(RegExp(r'[-/.]'), ' ').trim();
       final parts = normalizedDate.split(' ');
 
       if (parts.length != 3) {
@@ -128,6 +129,45 @@ class DateFormatters {
     }
 
     return true;
+  }
+
+  static calculateDateRangeFromShamsiString(String dateToCompareStr) {
+    try {
+      // Split the string into year, month, and day components
+      List<String> dateParts = dateToCompareStr.split('/');
+
+      // Ensure the string is in the correct format (yyyy-MM-dd)
+      if (dateParts.length != 3) {
+        return 'Invalid Shamsi date format';
+      }
+
+      // Parse the components into integers
+      int year = int.parse(dateParts[0]);
+      int month = int.parse(dateParts[1]);
+      int day = int.parse(dateParts[2]);
+
+      // Create a Jalali (Shamsi) date object
+      Jalali jalaliDate = Jalali(year, month, day);
+
+      // Convert the Jalali (Shamsi) date to a Gregorian DateTime object
+      DateTime dateToCompare = jalaliDate.toDateTime();
+
+      // Get the current date (Gregorian)
+      DateTime today = DateTime.now();
+
+      // Calculate the difference in days
+      Duration difference = today.difference(dateToCompare);
+
+      // Return the difference in days with 'd' suffix
+      if (difference.inDays == 0) {
+        return 'امروز';
+      } else {
+        return '${difference.inDays.abs()}d';
+      }
+    } catch (e) {
+      // Catch any errors (like invalid date format or parsing issues)
+      return 'Invalid Shamsi date format';
+    }
   }
 }
 

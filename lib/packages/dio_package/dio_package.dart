@@ -21,3 +21,5 @@ final httpClient = Dio(BaseOptions(baseUrl: 'https://tam.tawanaacademy.com/'))
 
 CancelToken cancelToken = CancelToken();
 const defaultTimeOut = 60;
+
+const String newsGetApi = 'api/show_news';

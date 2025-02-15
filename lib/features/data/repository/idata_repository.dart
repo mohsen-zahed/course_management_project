@@ -2,11 +2,13 @@ import 'package:course_management_project/features/data/models/attendance_model.
 import 'package:course_management_project/features/data/models/commetns_model.dart';
 import 'package:course_management_project/features/data/models/daily_grade_model.dart';
 import 'package:course_management_project/features/data/models/grade_model.dart';
+import 'package:course_management_project/features/data/models/news_model.dart';
 import 'package:course_management_project/features/data/models/student_model.dart';
 import 'package:course_management_project/features/data/models/time_table_model.dart';
 import 'package:course_management_project/features/data/models/transaction_model.dart';
 import 'package:course_management_project/features/data/providers/attendance_provider.dart';
 import 'package:course_management_project/features/data/providers/daily_grades_provider.dart';
+import 'package:course_management_project/features/data/providers/news_provider.dart';
 import 'package:course_management_project/features/data/providers/transaction_provider.dart';
 import 'package:course_management_project/features/data/source/idata_data_source.dart';
 import 'package:course_management_project/packages/dio_package/dio_package.dart';
@@ -88,6 +90,17 @@ class DataRepositoryImp implements IDataRepository {
   Future<List<TimeTableModel>> fetchStudentTimeTable(int studentId) async {
     try {
       final result = await iDataDataSource.fetchStudentTimeTable(studentId);
+      return result;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<NewsModel>> fetchNewsData(int page) async {
+    try {
+      final result = await iDataDataSource.fetchNewsData(page);
+      di<NewsProvider>().updateNewsList(result);
       return result;
     } catch (e) {
       rethrow;

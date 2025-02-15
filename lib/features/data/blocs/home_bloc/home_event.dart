@@ -8,3 +8,5 @@ sealed class HomeEvent extends Equatable {
 }
 
 class StudentsListRequested extends HomeEvent {}
+
+class InfoCardsSummaryDataRequested extends HomeEvent {}
