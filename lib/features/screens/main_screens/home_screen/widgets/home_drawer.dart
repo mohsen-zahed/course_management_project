@@ -15,7 +15,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class HomeDrawer extends StatelessWidget {
-  const HomeDrawer({super.key});
+  const HomeDrawer({super.key, required this.scaffoldKey});
+  final GlobalKey<ScaffoldState> scaffoldKey;
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +97,9 @@ class HomeDrawer extends StatelessWidget {
             title: 'لیست شاگردان',
             trailing: Icons.keyboard_arrow_left_rounded,
             onTap: () {
-              Navigator.pop(context);
+              if (scaffoldKey.currentState!.isDrawerOpen) {
+                scaffoldKey.currentState!.closeDrawer();
+              }
               Navigator.pushNamed(context, StudentsScreen.id);
             },
           ),
@@ -107,6 +110,9 @@ class HomeDrawer extends StatelessWidget {
             title: 'آخرین اخبار',
             trailing: Icons.keyboard_arrow_left_rounded,
             onTap: () {
+              if (scaffoldKey.currentState!.isDrawerOpen) {
+                scaffoldKey.currentState!.closeDrawer();
+              }
               Navigator.pushNamed(context, LatestNewsScreen.id);
             },
           ),
@@ -144,6 +150,9 @@ class HomeDrawer extends StatelessWidget {
                             const SizedBox(width: 10),
                             TextButton(
                               onPressed: () {
+                                if (scaffoldKey.currentState!.isDrawerOpen) {
+                                  scaffoldKey.currentState!.closeDrawer();
+                                }
                                 if (state is! LoggingOut) {
                                   context.read<AuthBloc>().add(
                                         LogoutRequested(id: context.read<UserProvider>().userModel!.id),

@@ -1,7 +1,9 @@
+import 'package:course_management_project/features/data/models/ad_banner_model.dart';
 import 'package:course_management_project/features/data/models/attendance_model.dart';
 import 'package:course_management_project/features/data/models/commetns_model.dart';
 import 'package:course_management_project/features/data/models/daily_grade_model.dart';
 import 'package:course_management_project/features/data/models/grade_model.dart';
+import 'package:course_management_project/features/data/models/home_info_model.dart';
 import 'package:course_management_project/features/data/models/news_model.dart';
 import 'package:course_management_project/features/data/models/student_model.dart';
 import 'package:course_management_project/features/data/models/time_table_model.dart';
@@ -105,5 +107,21 @@ class DataRepositoryImp implements IDataRepository {
     } catch (e) {
       rethrow;
     }
+  }
+
+  @override
+  Future<List<AdBannerModel>> fetchAdData() async {
+    try {
+      final result = await iDataDataSource.fetchAdData();
+      return result;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<HomeInfoModel>> fetchReportCardsData() {
+    // TODO: implement fetchReportCardsData
+    throw UnimplementedError();
   }
 }

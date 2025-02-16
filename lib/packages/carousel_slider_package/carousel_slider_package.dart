@@ -1,19 +1,18 @@
+import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:course_management_project/config/constants/colors/colors.dart';
+import 'package:course_management_project/features/data/models/ad_banner_model.dart';
 import 'package:course_management_project/features/screens/main_screens/home_screen/notifiers/home_notifiers.dart';
 import 'package:course_management_project/helpers/theme_helpers.dart';
 import 'package:course_management_project/utils/media_query.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CarouselSliderPackage extends StatelessWidget {
-  const CarouselSliderPackage({
-    super.key,
-    required this.bannersList,
-  });
-
-  final List<String> bannersList;
+  const CarouselSliderPackage({super.key, required this.adList});
+  final List<AdBannerModel> adList;
 
   @override
   Widget build(BuildContext context) {
@@ -22,23 +21,55 @@ class CarouselSliderPackage extends StatelessWidget {
       builder: (context, adIndicator, child) {
         return Column(
           children: [
-            AspectRatio(
-              aspectRatio: 2 / 1,
-              child: SizedBox(
-                width: getMediaQueryWidth(context),
-                child: bannersList.isNotEmpty
-                    ? CarouselSlider.builder(
-                        itemCount: bannersList.length,
+            SizedBox(
+              width: getMediaQueryWidth(context, 0.95),
+              child: adList.isNotEmpty
+                  ? Center(
+                      child: CarouselSlider.builder(
+                        itemCount: adList.length,
                         itemBuilder: (context, index, realIndex) {
                           return CachedNetworkImage(
-                            imageUrl: bannersList[index],
+                            imageUrl: adList[index].image,
                             fit: BoxFit.cover,
                             imageBuilder: (context, imageProvider) {
                               return Container(
-                                margin: const EdgeInsets.symmetric(horizontal: 10),
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(10),
-                                  image: DecorationImage(image: imageProvider, fit: BoxFit.cover),
+                                  image: DecorationImage(
+                                    image: imageProvider,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                // Adding a gradient overlay on top of the image
+                                child: Container(
+                                  width: getMediaQueryWidth(context),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        kBlackColor,
+                                        kBlackColor.withOpacity(0.8),
+                                        kBlackColor.withOpacity(0.5),
+                                        kBlackColor.withOpacity(0.3),
+                                        kTransparentColor,
+                                      ],
+                                      begin: Alignment.bottomCenter,
+                                      end: Alignment.topCenter,
+                                    ),
+                                  ),
+                                  alignment: AlignmentDirectional.bottomStart,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(25.0),
+                                    child: Text(
+                                      adList[index].title,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium!
+                                          .copyWith(color: kWhiteColor, fontWeight: FontWeight.bold),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
                                 ),
                               );
                             },
@@ -77,13 +108,12 @@ class CarouselSliderPackage extends StatelessWidget {
                           autoPlay: true,
                           initialPage: adIndicator,
                           scrollDirection: Axis.horizontal,
-                          // autoPlayCurve: Curves.easeInOut,
                           enlargeFactor: 0.2,
                           enableInfiniteScroll: true,
                         ),
-                      )
-                    : const SizedBox(),
-              ),
+                      ),
+                    )
+                  : const SizedBox(),
             ),
             const SizedBox(height: 5),
             Row(
@@ -91,7 +121,7 @@ class CarouselSliderPackage extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 ...List.generate(
-                  bannersList.length,
+                  adList.length,
                   (index) {
                     return AnimatedContainer(
                       duration: const Duration(milliseconds: 200),

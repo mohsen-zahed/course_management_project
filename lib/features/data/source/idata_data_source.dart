@@ -2,10 +2,12 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:course_management_project/config/exceptions/app_exceptions.dart';
+import 'package:course_management_project/features/data/models/ad_banner_model.dart';
 import 'package:course_management_project/features/data/models/attendance_model.dart';
 import 'package:course_management_project/features/data/models/commetns_model.dart';
 import 'package:course_management_project/features/data/models/daily_grade_model.dart';
 import 'package:course_management_project/features/data/models/grade_model.dart';
+import 'package:course_management_project/features/data/models/home_info_model.dart';
 import 'package:course_management_project/features/data/models/news_model.dart';
 import 'package:course_management_project/features/data/models/student_model.dart';
 import 'package:course_management_project/features/data/models/time_table_model.dart';
@@ -23,6 +25,8 @@ abstract class IDataDataSource {
   Future<List<DailyGradeModel>> fetchStudentDailyGradeDetails(int studentId, String type, int page);
   Future<List<TimeTableModel>> fetchStudentTimeTable(int studentId);
   Future<List<NewsModel>> fetchNewsData(int page);
+  Future<List<AdBannerModel>> fetchAdData();
+  Future<List<HomeInfoModel>> fetchReportCardsData();
 }
 
 class DataDataSourceImp implements IDataDataSource {
@@ -260,5 +264,35 @@ class DataDataSourceImp implements IDataDataSource {
     } on TimeoutException catch (_) {
       throw const NoServerException(StatusCodes.noServerFoundCode);
     }
+  }
+
+  @override
+  Future<List<AdBannerModel>> fetchAdData() async {
+    try {
+      cancelToken = CancelToken();
+      final response = await httpClient
+          .get(
+            adBannerGetApi,
+            cancelToken: cancelToken,
+          )
+          .timeout(const Duration(seconds: defaultTimeOut));
+      if (response.data == null) {
+        throw const NoDataException(StatusCodes.noDataReceivedCode);
+      } else if (response.statusCode == 200 && response.data is List) {
+        return (response.data as List).map((e) => AdBannerModel.fromJson(e)).toList();
+      } else {
+        throw UnknowException('${response.statusMessage} ${response.statusCode}');
+      }
+    } on SocketException catch (_) {
+      throw const NoInternetException(StatusCodes.noInternetConnectionCode);
+    } on TimeoutException catch (_) {
+      throw const NoServerException(StatusCodes.noServerFoundCode);
+    }
+  }
+
+  @override
+  Future<List<HomeInfoModel>> fetchReportCardsData() {
+    // TODO: implement fetchReportCardsData
+    throw UnimplementedError();
   }
 }

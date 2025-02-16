@@ -23,3 +23,6 @@ CancelToken cancelToken = CancelToken();
 const defaultTimeOut = 60;
 
 const String newsGetApi = 'api/show_news';
+const String adBannerGetApi = 'api/show_advertisement';
+
+final String updoadsUrl = '${httpClient.options.baseUrl}/public/uploads';

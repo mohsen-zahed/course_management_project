@@ -13,6 +13,8 @@ import 'package:course_management_project/helpers/helper_functions.dart';
 import 'package:course_management_project/packages/carousel_slider_package/carousel_slider_package.dart';
 import 'package:course_management_project/packages/flushbar_package/flushbar_package.dart';
 import 'package:course_management_project/packages/dio_package/status_codes.dart';
+import 'package:course_management_project/packages/shimmer_package/shimmer_package.dart';
+import 'package:course_management_project/widgets/custom_error_widget.dart';
 import 'package:course_management_project/widgets/custom_loading_indicator.dart';
 import 'package:course_management_project/widgets/scaffold_background_image.dart';
 import 'package:flutter/material.dart';
@@ -34,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     HomeNotifiers.bannerValueNotifier = ValueNotifier(0);
     _scaffoldKey = GlobalKey<ScaffoldState>();
+    context.read<HomeBloc>().add(AdBannerDataRequested());
   }
 
   @override
@@ -43,115 +46,128 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  List<String> adBanners = [
-    'https://adespresso.com/wp-content/uploads/2020/06/banner-ad-examples-1024x536.jpg',
-    'https://alidropship.com/wp-content/uploads/2019/12/50-best-banner-ads-examples.jpg',
-    'https://www.creatopy.com/blog/wp-content/uploads/2024/04/Banner-Ad-Design-Examples.png',
-  ];
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AuthBloc, AuthState>(
-      listener: (context, state) async {
-        if (state is LoggingOut) {
-          Navigator.pop(context);
-        } else if (state is LogoutSuccess) {
-          FlushbarPackage.showSuccessFlushbar(context, 'شما موفقانه از حساب خود خارج شدید!');
-          Future.delayed(const Duration(seconds: 1), () {
-            if (context.mounted) {
-              Navigator.pushNamedAndRemoveUntil(context, LoginScreen.id, (route) => false);
-            }
-          });
-        } else if (state is LogoutFailure) {
-          if (state.errorMessage.contains(StatusCodes.unAthurizedCode)) {
-            FlushbarPackage.showErrorFlushbar(context, 'خطایی در هنگام خروج از حساب رخ داده است!');
-          } else {
-            FlushbarPackage.showErrorFlushbar(context, 'خطایی رخ داده است، لطفا دوباره امتحان کنید!');
-          }
+    return BlocConsumer<HomeBloc, HomeState>(
+      listener: (context, bannerState) {
+        if (bannerState is AdBannerListFailure) {
+          FlushbarPackage.showErrorFlushbar(context, bannerState.errorMessage);
         }
       },
-      builder: (context, state) {
-        return Stack(
-          children: [
-            Scaffold(
-              drawer: const HomeDrawer(),
-              key: _scaffoldKey,
-              appBar: AppBar(
-                toolbarHeight: 80,
-                leadingWidth: 0,
-                title: HomeAppbar(
-                  onImageTap: () {
-                    _scaffoldKey.currentState?.openDrawer();
-                  },
-                ),
-                leading: const Icon(null),
-              ),
-              body: GestureDetector(
-                onHorizontalDragUpdate: (details) {
-                  // Detect swipe from left to right to open the drawer
-                  if (details.primaryDelta! < 5) {
-                    _scaffoldKey.currentState?.openDrawer(); // Open the drawer when swiped right
-                  }
-                },
-                child: ScaffoldBackgroundImage(
-                  child: SafeArea(
-                    child: PopScope(
-                      canPop: false,
-                      onPopInvoked: (didPop) async {
-                        if (_scaffoldKey.currentState!.isDrawerOpen) {
-                          _scaffoldKey.currentState!.closeDrawer();
-                        } else {
-                          await ExitAppHandler.handleExitApp(context);
-                        }
+      builder: (context, bannerState) {
+        return BlocConsumer<AuthBloc, AuthState>(
+          listener: (context, state) async {
+            if (state is LoggingOut) {
+              Navigator.pop(context);
+            } else if (state is LogoutSuccess) {
+              FlushbarPackage.showSuccessFlushbar(context, 'شما موفقانه از حساب خود خارج شدید!');
+              Future.delayed(const Duration(seconds: 1), () {
+                if (context.mounted) {
+                  Navigator.pushNamedAndRemoveUntil(context, LoginScreen.id, (route) => false);
+                }
+              });
+            } else if (state is LogoutFailure) {
+              if (state.errorMessage.contains(StatusCodes.unAthurizedCode)) {
+                FlushbarPackage.showErrorFlushbar(context, 'خطایی در هنگام خروج از حساب رخ داده است!');
+              } else {
+                FlushbarPackage.showErrorFlushbar(context, 'خطایی رخ داده است، لطفا دوباره امتحان کنید!');
+              }
+            }
+          },
+          builder: (context, state) {
+            return Stack(
+              children: [
+                Scaffold(
+                  drawer: HomeDrawer(scaffoldKey: _scaffoldKey),
+                  key: _scaffoldKey,
+                  appBar: AppBar(
+                    toolbarHeight: 80,
+                    leadingWidth: 0,
+                    title: HomeAppbar(
+                      onImageTap: () {
+                        _scaffoldKey.currentState?.openDrawer();
                       },
-                      child: RefreshIndicator(
-                        onRefresh: () async {
-                          context.read<HomeBloc>().add(StudentsListRequested());
-                        },
-                        child: SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              const SizedBox(height: 10),
-                              CarouselSliderPackage(bannersList: adBanners),
-                              const SizedBox(height: 10),
-                              Padding(
-                                padding: const EdgeInsets.all(6),
-                                child: BlocConsumer<HomeBloc, HomeState>(
-                                  listener: (context, state) {},
-                                  builder: (context, state) {
-                                    return StaggeredGrid.count(
-                                      crossAxisCount: 2,
-                                      mainAxisSpacing: 5,
-                                      crossAxisSpacing: 5,
-                                      children: [
-                                        ...List.generate(
-                                          infoList.length,
-                                          (index) {
-                                            return HomeReportCard(infoModel: infoList[index]);
-                                          },
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                ),
+                    ),
+                    leading: const Icon(null),
+                  ),
+                  body: GestureDetector(
+                    onHorizontalDragUpdate: (details) {
+                      // Detect swipe from left to right to open the drawer
+                      if (details.primaryDelta! < 5) {
+                        _scaffoldKey.currentState?.openDrawer(); // Open the drawer when swiped right
+                      }
+                    },
+                    child: ScaffoldBackgroundImage(
+                      child: SafeArea(
+                        child: PopScope(
+                          canPop: false,
+                          onPopInvoked: (didPop) async {
+                            if (_scaffoldKey.currentState!.isDrawerOpen) {
+                              _scaffoldKey.currentState!.closeDrawer();
+                            } else {
+                              await ExitAppHandler.handleExitApp(context);
+                            }
+                          },
+                          child: RefreshIndicator(
+                            onRefresh: () async {
+                              context.read<HomeBloc>().add(StudentsListRequested());
+                            },
+                            child: SingleChildScrollView(
+                              child: Column(
+                                children: [
+                                  const SizedBox(height: 10),
+                                  bannerState is AdBannerListLoading
+                                      ? const CustomShimmer()
+                                      : bannerState is AdBannerListSuccess
+                                          ? CarouselSliderPackage(adList: bannerState.adList)
+                                          : CustomErrorWidget(
+                                              onTap: () {
+                                                context.read<HomeBloc>().add(AdBannerDataRequested());
+                                              },
+                                            ),
+                                  const SizedBox(height: 10),
+                                  Padding(
+                                    padding: const EdgeInsets.all(6),
+                                    child: BlocConsumer<HomeBloc, HomeState>(
+                                      listener: (context, state) {},
+                                      builder: (context, state) {
+                                        return StaggeredGrid.count(
+                                          crossAxisCount: 2,
+                                          mainAxisSpacing: 5,
+                                          crossAxisSpacing: 5,
+                                          children: [
+                                            ...List.generate(
+                                              infoList.length,
+                                              (index) {
+                                                return HomeReportCard(infoModel: infoList[index]);
+                                              },
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ),
-            state is LoggingOut
-                ? Positioned.fill(
-                    child: Container(
-                      color: kBlackColor.withOpacity(0.5),
-                      child: const CustomLoadingIndicator(message: 'در حال خروج از برنامه...', textColor: kWhiteColor),
-                    ),
-                  )
-                : SizedBox.fromSize(size: Size.zero),
-          ],
+                state is LoggingOut
+                    ? Positioned.fill(
+                        child: Container(
+                          color: kBlackColor.withOpacity(0.5),
+                          child:
+                              const CustomLoadingIndicator(message: 'در حال خروج از برنامه...', textColor: kWhiteColor),
+                        ),
+                      )
+                    : SizedBox.fromSize(size: Size.zero),
+              ],
+            );
+          },
         );
       },
     );

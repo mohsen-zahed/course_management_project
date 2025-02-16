@@ -25,3 +25,18 @@ final class StudentsListFailure extends HomeState {
   @override
   List<Object> get props => [errorMessage];
 }
+
+final class AdBannerListLoading extends HomeState {}
+
+final class AdBannerListSuccess extends HomeState {
+  final List<AdBannerModel> adList;
+
+  const AdBannerListSuccess({required this.adList});
+}
+
+final class AdBannerListFailure extends HomeState {
+  final String errorMessage;
+  final String? statusCode;
+
+  const AdBannerListFailure({required this.errorMessage, this.statusCode});
+}

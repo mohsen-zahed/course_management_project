@@ -245,41 +245,41 @@ class PostWidget extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 10),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              GestureDetector(
-                onTap: () {},
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: kGreyColor100,
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Icon(Icons.thumb_up_alt_rounded),
-                      SizedBox(width: 4),
-                      Text('لایک'),
-                    ],
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(5),
-                  color: kGreyColor100,
-                ),
-                child: const Text('1.5k'),
-              ),
-            ],
-          ),
-        ),
+        // Padding(
+        //   padding: const EdgeInsets.symmetric(horizontal: 15),
+        //   child: Row(
+        //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //     children: [
+        //       GestureDetector(
+        //         onTap: () {},
+        //         child: Container(
+        //           padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+        //           decoration: BoxDecoration(
+        //             color: kGreyColor100,
+        //             borderRadius: BorderRadius.circular(5),
+        //           ),
+        //           child: const Row(
+        //             mainAxisSize: MainAxisSize.min,
+        //             crossAxisAlignment: CrossAxisAlignment.center,
+        //             children: [
+        //               Icon(Icons.thumb_up_alt_rounded),
+        //               SizedBox(width: 4),
+        //               Text('لایک'),
+        //             ],
+        //           ),
+        //         ),
+        //       ),
+        //       Container(
+        //         padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+        //         decoration: BoxDecoration(
+        //           borderRadius: BorderRadius.circular(5),
+        //           color: kGreyColor100,
+        //         ),
+        //         child: const Text('1.5k'),
+        //       ),
+        //     ],
+        //   ),
+        // ),
       ],
     );
   }
