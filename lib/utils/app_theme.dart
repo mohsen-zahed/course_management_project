@@ -297,6 +297,7 @@ class SizeConstants {
   double buttonRadius = 16.0.r;
 
   // Image Sizes
+  double imageXXSmall = 16.0.w;
   double imageXSmall = 32.0.w;
   double imageSmall = 48.0.w;
   // double imageSmallMedium = 60.0.w;

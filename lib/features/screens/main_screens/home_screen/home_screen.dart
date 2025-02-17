@@ -1,8 +1,8 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:course_management_project/config/constants/colors/colors.dart';
-import 'package:course_management_project/config/constants/images_paths.dart';
 import 'package:course_management_project/features/data/blocs/auth_bloc/auth_bloc.dart';
 import 'package:course_management_project/features/data/blocs/home_bloc/home_bloc.dart';
-import 'package:course_management_project/features/data/models/home_info_model.dart';
+import 'package:course_management_project/features/data/models/home_student_model.dart';
 import 'package:course_management_project/features/screens/initial_screens/login_screen/login_screen.dart';
 import 'package:course_management_project/features/screens/main_screens/home_screen/notifiers/home_notifiers.dart';
 import 'package:course_management_project/features/screens/main_screens/home_screen/widgets/home_appbar.dart';
@@ -14,6 +14,8 @@ import 'package:course_management_project/packages/carousel_slider_package/carou
 import 'package:course_management_project/packages/flushbar_package/flushbar_package.dart';
 import 'package:course_management_project/packages/dio_package/status_codes.dart';
 import 'package:course_management_project/packages/shimmer_package/shimmer_package.dart';
+import 'package:course_management_project/utils/app_theme.dart';
+import 'package:course_management_project/utils/media_query.dart';
 import 'package:course_management_project/widgets/custom_error_widget.dart';
 import 'package:course_management_project/widgets/custom_loading_indicator.dart';
 import 'package:course_management_project/widgets/scaffold_background_image.dart';
@@ -31,12 +33,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late GlobalKey<ScaffoldState> _scaffoldKey;
+
   @override
   void initState() {
     super.initState();
     HomeNotifiers.bannerValueNotifier = ValueNotifier(0);
     _scaffoldKey = GlobalKey<ScaffoldState>();
     context.read<HomeBloc>().add(AdBannerDataRequested());
+    context.read<HomeBloc>().add(InfoCardsSummaryDataRequested());
   }
 
   @override
@@ -46,15 +50,29 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  var bannerState;
+  var infoState;
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<HomeBloc, HomeState>(
-      listener: (context, bannerState) {
-        if (bannerState is AdBannerListFailure) {
-          FlushbarPackage.showErrorFlushbar(context, bannerState.errorMessage);
+      listener: (context, state) {
+        if (state is InfoCardsSummaryDataLoading) {
+          infoState = state;
+        } else if (state is InfoCardsSummaryDataFailure) {
+          infoState = state;
+        } else if (state is InfoCardsSummaryDataSuccess) {
+          infoState = state;
+        }
+        if (state is AdBannerListLoading) {
+          bannerState = state;
+        } else if (state is AdBannerListFailure) {
+          bannerState = state;
+          FlushbarPackage.showErrorFlushbar(context, state.errorMessage);
+        } else if (state is AdBannerListSuccess) {
+          bannerState = state;
         }
       },
-      builder: (context, bannerState) {
+      builder: (context, state) {
         return BlocConsumer<AuthBloc, AuthState>(
           listener: (context, state) async {
             if (state is LoggingOut) {
@@ -90,64 +108,158 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     leading: const Icon(null),
                   ),
-                  body: GestureDetector(
-                    onHorizontalDragUpdate: (details) {
-                      // Detect swipe from left to right to open the drawer
-                      if (details.primaryDelta! < 5) {
-                        _scaffoldKey.currentState?.openDrawer(); // Open the drawer when swiped right
+                  body: NotificationListener<ScrollNotification>(
+                    onNotification: (scrollNotification) {
+                      // Only trigger the drawer when the scroll is horizontal (for right-to-left swipe)
+                      if (scrollNotification is ScrollUpdateNotification) {
+                        if (scrollNotification.metrics.axis == Axis.horizontal) {
+                          // Check if it's a right-to-left swipe
+                          if (scrollNotification.scrollDelta! < 0) {
+                            _scaffoldKey.currentState?.openDrawer();
+                            return true; // Prevent further notification propagation
+                          }
+                        }
                       }
+                      return false;
                     },
-                    child: ScaffoldBackgroundImage(
-                      child: SafeArea(
-                        child: PopScope(
-                          canPop: false,
-                          onPopInvoked: (didPop) async {
-                            if (_scaffoldKey.currentState!.isDrawerOpen) {
-                              _scaffoldKey.currentState!.closeDrawer();
-                            } else {
-                              await ExitAppHandler.handleExitApp(context);
-                            }
-                          },
-                          child: RefreshIndicator(
-                            onRefresh: () async {
-                              context.read<HomeBloc>().add(StudentsListRequested());
+                    child: GestureDetector(
+                      onHorizontalDragUpdate: (details) {
+                        HelperFunctions.openDrawer(details, _scaffoldKey);
+                      },
+                      child: ScaffoldBackgroundImage(
+                        child: SafeArea(
+                          child: PopScope(
+                            canPop: false,
+                            onPopInvoked: (didPop) async {
+                              if (_scaffoldKey.currentState!.isDrawerOpen) {
+                                _scaffoldKey.currentState!.closeDrawer();
+                              } else {
+                                await ExitAppHandler.handleExitApp(context);
+                              }
                             },
-                            child: SingleChildScrollView(
-                              child: Column(
-                                children: [
-                                  const SizedBox(height: 10),
-                                  bannerState is AdBannerListLoading
-                                      ? const CustomShimmer()
-                                      : bannerState is AdBannerListSuccess
-                                          ? CarouselSliderPackage(adList: bannerState.adList)
-                                          : CustomErrorWidget(
-                                              onTap: () {
-                                                context.read<HomeBloc>().add(AdBannerDataRequested());
-                                              },
-                                            ),
-                                  const SizedBox(height: 10),
-                                  Padding(
-                                    padding: const EdgeInsets.all(6),
-                                    child: BlocConsumer<HomeBloc, HomeState>(
-                                      listener: (context, state) {},
-                                      builder: (context, state) {
-                                        return StaggeredGrid.count(
-                                          crossAxisCount: 2,
-                                          mainAxisSpacing: 5,
-                                          crossAxisSpacing: 5,
-                                          children: [
-                                            ...List.generate(
-                                              infoList.length,
-                                              (index) {
-                                                return HomeReportCard(infoModel: infoList[index]);
-                                              },
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                ],
+                            child: RefreshIndicator(
+                              onRefresh: () async {
+                                context.read<HomeBloc>().add(AdBannerDataRequested());
+                                context.read<HomeBloc>().add(InfoCardsSummaryDataRequested());
+                              },
+                              child: SingleChildScrollView(
+                                physics: const BouncingScrollPhysics(),
+                                child: Column(
+                                  children: [
+                                    const SizedBox(height: 10),
+                                    bannerState is AdBannerListLoading
+                                        ? const CustomShimmer()
+                                        : bannerState is AdBannerListSuccess
+                                            ? CarouselSliderPackage(adList: bannerState.adList)
+                                            : CustomErrorWidget(
+                                                onTap: () {
+                                                  context.read<HomeBloc>().add(AdBannerDataRequested());
+                                                },
+                                              ),
+                                    const SizedBox(height: 10),
+                                    infoState is InfoCardsSummaryDataLoading
+                                        ? SizedBox(
+                                            height: getMediaQueryHeight(context, 0.5),
+                                            child: const Center(child: CustomLoadingIndicator()),
+                                          )
+                                        : infoState is InfoCardsSummaryDataSuccess
+                                            ? Padding(
+                                                padding: const EdgeInsets.all(6),
+                                                child: ListView.separated(
+                                                  shrinkWrap: true,
+                                                  physics: const BouncingScrollPhysics(),
+                                                  itemBuilder: (context, index) {
+                                                    var student = infoState.homeInfoList[index] as HomeStudentModel;
+                                                    return Column(
+                                                      children: [
+                                                        Container(
+                                                          width: getMediaQueryWidth(context),
+                                                          margin: const EdgeInsets.fromLTRB(6, 0, 6, 5),
+                                                          padding:
+                                                              const EdgeInsets.symmetric(horizontal: 15, vertical: 7),
+                                                          decoration: BoxDecoration(
+                                                            borderRadius: BorderRadius.circular(7),
+                                                            color: kStudentCardInfoColor,
+                                                          ),
+                                                          child: Row(
+                                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                            children: [
+                                                              Flexible(
+                                                                flex: 4,
+                                                                child: Row(
+                                                                  mainAxisSize: MainAxisSize.min,
+                                                                  children: [
+                                                                    CircleAvatar(
+                                                                      backgroundImage:
+                                                                          CachedNetworkImageProvider(student.profile),
+                                                                      radius: sizeConstants.imageXXSmall,
+                                                                    ),
+                                                                    const SizedBox(width: 10),
+                                                                    Flexible(
+                                                                      child: Text(
+                                                                        student.stName,
+                                                                        style: Theme.of(context)
+                                                                            .textTheme
+                                                                            .bodyMedium!
+                                                                            .copyWith(fontWeight: FontWeight.bold),
+                                                                        overflow: TextOverflow.ellipsis,
+                                                                        maxLines: 1,
+                                                                      ),
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ),
+                                                              const SizedBox(width: 10),
+                                                              Flexible(
+                                                                child: Text(
+                                                                  student.stId,
+                                                                  style: Theme.of(context)
+                                                                      .textTheme
+                                                                      .bodySmall!
+                                                                      .copyWith(fontWeight: FontWeight.bold),
+                                                                  maxLines: 1,
+                                                                  overflow: TextOverflow.ellipsis,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        ),
+                                                        StaggeredGrid.count(
+                                                          crossAxisCount: 2,
+                                                          mainAxisSpacing: 5,
+                                                          crossAxisSpacing: 5,
+                                                          children: [
+                                                            ...List.generate(
+                                                              student.details.length,
+                                                              (index) {
+                                                                return HomeReportCard(
+                                                                  infoModel: student.details[index],
+                                                                );
+                                                              },
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    );
+                                                  },
+                                                  separatorBuilder: (context, index) {
+                                                    return const SizedBox(height: 15);
+                                                  },
+                                                  itemCount: infoState.homeInfoList.length,
+                                                ),
+                                              )
+                                            : SizedBox(
+                                                height: getMediaQueryHeight(context, 0.5),
+                                                child: Center(
+                                                  child: CustomErrorWidget(
+                                                    onTap: () {
+                                                      context.read<HomeBloc>().add(InfoCardsSummaryDataRequested());
+                                                    },
+                                                  ),
+                                                ),
+                                              ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
@@ -173,26 +285,3 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
-
-List<HomeInfoModel> infoList = [
-  HomeInfoModel(
-    image: ImagesPaths.loanIconPng,
-    title: 'مجموع باقی داری',
-    value: HelperFunctions.formatCurrencyAfghani(double.parse('1200')),
-  ),
-  const HomeInfoModel(
-    image: ImagesPaths.lessonIconPng,
-    title: 'مجموع صنوف',
-    value: '3',
-  ),
-  const HomeInfoModel(
-    image: ImagesPaths.gradeIconPng,
-    title: 'مجموع نمرات روزانه',
-    value: '86',
-  ),
-  const HomeInfoModel(
-    image: ImagesPaths.reviewIconPng,
-    title: 'تعداد نظریات',
-    value: '31',
-  ),
-];

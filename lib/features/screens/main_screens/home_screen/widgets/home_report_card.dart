@@ -1,12 +1,13 @@
 import 'package:course_management_project/config/constants/colors/colors.dart';
-import 'package:course_management_project/features/data/models/home_info_model.dart';
+import 'package:course_management_project/features/data/models/home_info_details_model.dart';
 import 'package:course_management_project/utils/app_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:text_scroll/text_scroll.dart';
 
 class HomeReportCard extends StatelessWidget {
   const HomeReportCard({super.key, required this.infoModel});
-  final HomeInfoModel infoModel;
+  final HomeInfoDetailsModel infoModel;
 
   @override
   Widget build(BuildContext context) {
@@ -22,9 +23,9 @@ class HomeReportCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Image.asset(infoModel.image, height: sizeConstants.imageXSmall),
+                Image.asset(infoModel.imagePath, height: sizeConstants.imageXSmall),
                 Container(
-                  width: sizeConstants.imageXSmall,
+                  width: sizeConstants.imageSmall + 10.w,
                   height: sizeConstants.imageXSmall,
                   padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
@@ -32,19 +33,34 @@ class HomeReportCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(5),
                   ),
                   alignment: Alignment.center,
-                  child: TextScrollPackage(text: infoModel.value),
+                  child: TextScrollPackage(text: infoModel.value.toString()),
                 ),
               ],
             ),
             const SizedBox(height: 15),
             Text(
-              infoModel.title,
+              _getLabel(infoModel.label),
               style: Theme.of(context).textTheme.titleMedium,
             ),
           ],
         ),
       ),
     );
+  }
+}
+
+_getLabel(String label) {
+  switch (label) {
+    case 'Daily Grade':
+      return 'نمرات روزانه';
+    case 'Remaining Money':
+      return 'باقی داری پول';
+    case 'Classes Attended':
+      return 'صنوف';
+    case 'Comments':
+      return 'نظریات';
+    default:
+      return label;
   }
 }
 

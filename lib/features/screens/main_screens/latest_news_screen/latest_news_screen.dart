@@ -7,7 +7,6 @@ import 'package:course_management_project/features/screens/main_screens/home_scr
 import 'package:course_management_project/helpers/date_formatters.dart';
 import 'package:course_management_project/packages/dio_package/dio_package.dart';
 import 'package:course_management_project/packages/flushbar_package/flushbar_package.dart';
-import 'package:course_management_project/packages/get_it_package/get_it_package.dart';
 import 'package:course_management_project/utils/app_theme.dart';
 import 'package:course_management_project/utils/media_query.dart';
 import 'package:course_management_project/widgets/custom_cached_network_image.dart';
@@ -18,13 +17,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
-import 'package:text_scroll/text_scroll.dart';
-
-List<String> conferenceList = [
-  'https://www.norquest.ca/getmedia/ec1c2c3b-48e5-4b50-aed9-2eba78149883/Educational-Assisstant-Conference.jpg?width=1280&height=720&ext=.jpg',
-  'https://www.stonebridge.uk.com/blog/wp-content/uploads/2020/09/Primary-School-Teacher-Course.jpg',
-  'https://www.stonebridge.uk.com/blog/wp-content/uploads/2020/09/Primary-School-Teacher-Course.jpg',
-];
 
 class LatestNewsScreen extends StatefulWidget {
   static const String id = '/latest_news_screen';

@@ -1,6 +1,5 @@
 import 'package:course_management_project/utils/app_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class HomeBottomSheetListTile extends StatelessWidget {
   const HomeBottomSheetListTile({

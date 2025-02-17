@@ -1,4 +1,3 @@
-import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:course_management_project/config/constants/colors/colors.dart';
@@ -8,7 +7,6 @@ import 'package:course_management_project/helpers/theme_helpers.dart';
 import 'package:course_management_project/utils/media_query.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CarouselSliderPackage extends StatelessWidget {
   const CarouselSliderPackage({super.key, required this.adList});

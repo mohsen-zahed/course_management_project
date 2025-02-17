@@ -7,7 +7,7 @@ import 'package:course_management_project/features/data/models/attendance_model.
 import 'package:course_management_project/features/data/models/commetns_model.dart';
 import 'package:course_management_project/features/data/models/daily_grade_model.dart';
 import 'package:course_management_project/features/data/models/grade_model.dart';
-import 'package:course_management_project/features/data/models/home_info_model.dart';
+import 'package:course_management_project/features/data/models/home_student_model.dart';
 import 'package:course_management_project/features/data/models/news_model.dart';
 import 'package:course_management_project/features/data/models/student_model.dart';
 import 'package:course_management_project/features/data/models/time_table_model.dart';
@@ -26,7 +26,7 @@ abstract class IDataDataSource {
   Future<List<TimeTableModel>> fetchStudentTimeTable(int studentId);
   Future<List<NewsModel>> fetchNewsData(int page);
   Future<List<AdBannerModel>> fetchAdData();
-  Future<List<HomeInfoModel>> fetchReportCardsData();
+  Future<List<HomeStudentModel>> fetchReportCardsData();
 }
 
 class DataDataSourceImp implements IDataDataSource {
@@ -291,8 +291,50 @@ class DataDataSourceImp implements IDataDataSource {
   }
 
   @override
-  Future<List<HomeInfoModel>> fetchReportCardsData() {
-    // TODO: implement fetchReportCardsData
-    throw UnimplementedError();
+  Future<List<HomeStudentModel>> fetchReportCardsData() async {
+    try {
+      cancelToken = CancelToken();
+      final response = await httpClient
+          .get(
+            homeInfoReportGetApi,
+            cancelToken: cancelToken,
+          )
+          .timeout(const Duration(seconds: defaultTimeOut));
+      if (response.data == null) {
+        throw const NoDataException(StatusCodes.noDataReceivedCode);
+      } else if (response.statusCode == 200 && response.data is Map) {
+        return (response.data['data'] as List).map((studentJson) => HomeStudentModel.fromJson(studentJson)).toList();
+      } else if (response.statusCode == 200 && response.data is! Map) {
+        throw const AuthException(StatusCodes.unAthurizedCode);
+      } else {
+        throw UnknowException('${response.statusMessage} ${response.statusCode}');
+      }
+    } on SocketException catch (_) {
+      throw const NoInternetException(StatusCodes.noInternetConnectionCode);
+    } on TimeoutException catch (_) {
+      throw const NoServerException(StatusCodes.noServerFoundCode);
+    }
   }
 }
+
+
+//  "data": {
+//         "1": {
+//             "st_name": "عبدالصبور",
+//             "countDailyGrade": 62,
+//             "remainMoney": 0,
+//             "countClasses": 1,
+//             "countComment": 0
+//         },
+//         "2": {
+//             "st_name": "عبدالسمیع",
+//             "countDailyGrade": 0,
+//             "remainMoney": 0,
+//             "countClasses": 0,
+//             "countComment": 0
+//         }
+//     }
+
+// how can I fetch this data for a UI which is a contain of a vertical builder and for each generated one there are 4 other widgets to be generated which is a total of two builders... one is vertical which loops through "data" and the next one should loop through values of keys inside each "data"... and also the st_name should come with every vertical generated widget... but the rest should come with the second builder...
+
+// you now check the scenario and see if the current format of data can be fit and scenario achieved and if not, suggest a format for data

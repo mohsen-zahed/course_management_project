@@ -35,4 +35,15 @@ class HelperFunctions {
     final numberFormat = NumberFormat(isWholeNumber ? "#,###" : "#,###.##", "en_US");
     return numberFormat.format(amount);
   }
+
+  static openDrawer(DragUpdateDetails details, GlobalKey<ScaffoldState> scaffoldKey) {
+    // Only open drawer when swiping from right to left
+    if (details.primaryDelta! < 0) {
+      // primaryDelta < 0 means swipe from right to left
+      if (details.primaryDelta!.abs() < 5) {
+        // Optional threshold to ensure smooth behavior
+        scaffoldKey.currentState?.openDrawer();
+      }
+    }
+  }
 }

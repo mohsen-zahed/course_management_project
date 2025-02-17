@@ -1,3 +1,5 @@
+import 'package:course_management_project/packages/dio_package/dio_package.dart';
+
 class StudentModel {
   final int studentId;
   final String name;
@@ -47,8 +49,7 @@ class StudentModel {
       registrationDate: json['dateregister'] ?? '',
       userId: json['user_id'] ?? -1,
       stId: json['st_ID'] ?? '',
-      profileImage:
-          json['st_profile'] != null ? 'https://tam.tawanaacademy.com/public/st_profile/${json['st_profile']}' : '',
+      profileImage: json['st_profile'] != null ? '$profileUrl/${json['st_profile']}' : '',
       statusDelete: json['status_delete'] ?? '',
       createdAt: json['created_at'] ?? '',
       updatedAt: json['updated_at'] ?? '',

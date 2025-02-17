@@ -2,7 +2,6 @@ import 'package:course_management_project/config/constants/colors/colors.dart';
 import 'package:course_management_project/helpers/theme_helpers.dart';
 import 'package:course_management_project/utils/app_theme.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CustomTextField extends StatelessWidget {
   const CustomTextField({

@@ -40,3 +40,17 @@ final class AdBannerListFailure extends HomeState {
 
   const AdBannerListFailure({required this.errorMessage, this.statusCode});
 }
+
+class InfoCardsSummaryDataLoading extends HomeState {}
+
+class InfoCardsSummaryDataSuccess extends HomeState {
+  final List<HomeStudentModel> homeInfoList;
+
+  const InfoCardsSummaryDataSuccess({required this.homeInfoList});
+}
+
+class InfoCardsSummaryDataFailure extends HomeState {
+  final String errorMessage;
+
+  const InfoCardsSummaryDataFailure({required this.errorMessage});
+}

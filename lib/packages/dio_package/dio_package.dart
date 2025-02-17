@@ -24,5 +24,7 @@ const defaultTimeOut = 60;
 
 const String newsGetApi = 'api/show_news';
 const String adBannerGetApi = 'api/show_advertisement';
+const String homeInfoReportGetApi = 'api/all_information';
 
 final String updoadsUrl = '${httpClient.options.baseUrl}/public/uploads';
+final String profileUrl = '${httpClient.options.baseUrl}/public/st_profile';
