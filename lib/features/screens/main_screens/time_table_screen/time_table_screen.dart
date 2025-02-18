@@ -1,6 +1,7 @@
 import 'package:course_management_project/config/constants/colors/colors.dart';
 import 'package:course_management_project/features/data/blocs/time_table_bloc/time_table_bloc.dart';
 import 'package:course_management_project/features/screens/main_screens/attendance_details_screen/attendance_details_screen.dart';
+import 'package:course_management_project/features/screens/main_screens/home_screen/widgets/home_report_card.dart';
 import 'package:course_management_project/helpers/color_helper.dart';
 import 'package:course_management_project/helpers/date_formatters.dart';
 import 'package:course_management_project/packages/flushbar_package/flushbar_package.dart';
@@ -126,11 +127,9 @@ class _TimeTableScreenState extends State<TimeTableScreen> {
                                                       color: colors[index]['foreground'],
                                                     ),
                                                     alignment: Alignment.center,
-                                                    child: Text(
-                                                      state.timeTableList[index].subName,
-                                                      overflow: TextOverflow.ellipsis,
-                                                      maxLines: 1,
-                                                      style: Theme.of(context).textTheme.labelMedium!.copyWith(
+                                                    child: TextScrollPackage(
+                                                      text: '${state.timeTableList[index].subName} - ',
+                                                      textStyle: Theme.of(context).textTheme.labelMedium!.copyWith(
                                                             fontWeight: FontWeight.bold,
                                                             color: kWhiteColor,
                                                           ),

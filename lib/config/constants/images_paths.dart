@@ -9,4 +9,8 @@ class ImagesPaths {
   static const String loanIconPng = 'assets/images/loan.png';
   static const String lessonIconPng = 'assets/images/lesson.png';
   static const String reviewIconPng = 'assets/images/review.png';
+  static const String facebookIconPng = 'assets/images/facebook.png';
+  static const String instagramIconPng = 'assets/images/instagram.png';
+  static const String youtubeIconPng = 'assets/images/youtube.png';
+  static const String telegramIconPng = 'assets/images/telegram.png';
 }

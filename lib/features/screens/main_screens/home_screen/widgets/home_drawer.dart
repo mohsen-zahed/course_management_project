@@ -3,6 +3,7 @@ import 'package:course_management_project/config/constants/images_paths.dart';
 import 'package:course_management_project/features/data/blocs/auth_bloc/auth_bloc.dart';
 import 'package:course_management_project/features/data/providers/user_provider.dart';
 import 'package:course_management_project/features/screens/initial_screens/login_screen/login_screen.dart';
+import 'package:course_management_project/features/screens/main_screens/about_us_screen/about_us_screen.dart';
 import 'package:course_management_project/features/screens/main_screens/latest_news_screen/latest_news_screen.dart';
 import 'package:course_management_project/features/screens/main_screens/students_screen/students_screen.dart';
 import 'package:course_management_project/packages/flushbar_package/flushbar_package.dart';
@@ -95,7 +96,6 @@ class HomeDrawer extends StatelessWidget {
             leading: Icons.people_alt_rounded,
             tileColor: kBlueColor,
             title: 'لیست شاگردان',
-            trailing: Icons.keyboard_arrow_left_rounded,
             onTap: () {
               if (scaffoldKey.currentState!.isDrawerOpen) {
                 scaffoldKey.currentState!.closeDrawer();
@@ -108,7 +108,6 @@ class HomeDrawer extends StatelessWidget {
             leading: Icons.newspaper_rounded,
             tileColor: kBlueColor,
             title: 'آخرین اخبار',
-            trailing: Icons.keyboard_arrow_left_rounded,
             onTap: () {
               if (scaffoldKey.currentState!.isDrawerOpen) {
                 scaffoldKey.currentState!.closeDrawer();
@@ -116,12 +115,23 @@ class HomeDrawer extends StatelessWidget {
               Navigator.pushNamed(context, LatestNewsScreen.id);
             },
           ),
+          const SizedBox(height: 10),
+          CustomListTile(
+            leading: Icons.account_circle_outlined,
+            tileColor: kBlueColor,
+            title: 'درباره ما',
+            onTap: () {
+              if (scaffoldKey.currentState!.isDrawerOpen) {
+                scaffoldKey.currentState!.closeDrawer();
+              }
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const AboutUsScreen()));
+            },
+          ),
           const SizedBox(height: 30),
           CustomListTile(
             leading: Icons.logout_rounded,
             tileColor: kRedColor,
             title: 'خروج از حساب',
-            trailing: Icons.keyboard_arrow_left_rounded,
             onTap: () {
               showDialog(
                   context: context,

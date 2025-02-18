@@ -4,6 +4,7 @@ import 'package:course_management_project/features/screens/main_screens/home_scr
 import 'package:course_management_project/packages/flutter_secure_storage_package/flutter_secure_storage_const.dart';
 import 'package:course_management_project/packages/flutter_secure_storage_package/flutter_secure_storage_package.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SplashScreen extends StatefulWidget {
   static const String id = '/splash_screen';
@@ -39,29 +40,39 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Hero(
-                tag: 'appIcon',
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Image.asset(ImagesPaths.tawanaWhiteLogoJpg, height: 150),
-                ),
-              ),
-              const SizedBox(height: 50),
-              const Column(
+        child: Stack(
+          children: [
+            Center(
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  CircularProgressIndicator(strokeWidth: 2),
-                  SizedBox(height: 8),
-                  Text('در حال بارگیری...'),
+                  Hero(
+                    tag: 'appIcon',
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.asset(ImagesPaths.tawanaWhiteLogoJpg, height: 150),
+                    ),
+                  ),
+                  const SizedBox(height: 50),
+                  const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(strokeWidth: 2),
+                      SizedBox(height: 8),
+                      Text('در حال بارگیری...'),
+                    ],
+                  )
                 ],
-              )
-            ],
-          ),
+              ),
+            ),
+            Positioned(
+              bottom: 10.h,
+              right: 0,
+              left: 0,
+              child: Align(alignment: Alignment.bottomCenter,child: Text('از طرف تیم اشتراک دانش', style: Theme.of(context).textTheme.bodySmall)),
+            ),
+          ],
         ),
       ),
     );
