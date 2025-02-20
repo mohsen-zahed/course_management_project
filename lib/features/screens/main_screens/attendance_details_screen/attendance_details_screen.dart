@@ -172,7 +172,7 @@ class _AttendanceDetailsScreenState extends State<AttendanceDetailsScreen> {
                                           return ListView.builder(
                                             controller: _scrollController,
                                             itemCount: sortedList.length + 1,
-                                            padding: EdgeInsets.fromLTRB(0, sizeConstants.buttonHeightLarge, 0, 10),
+                                            padding: EdgeInsets.fromLTRB(0, sizeConstants.buttonHeightLarge + 10, 0, 10),
                                             physics: const BouncingScrollPhysics(),
                                             itemBuilder: (context, index) {
                                               // Ensure that we are checking for the range of the loaded items.
@@ -225,7 +225,7 @@ class _AttendanceDetailsScreenState extends State<AttendanceDetailsScreen> {
                                           builder: (context, filterNotifier, child) {
                                             return Container(
                                               width: getMediaQueryWidth(context),
-                                              height: 50.h,
+                                              constraints: BoxConstraints(minHeight: 50.h,maxHeight: 60.h),
                                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                                               alignment: AlignmentDirectional.center,
                                               decoration: BoxDecoration(

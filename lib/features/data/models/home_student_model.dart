@@ -4,10 +4,12 @@ import 'package:course_management_project/packages/dio_package/dio_package.dart'
 class HomeStudentModel {
   final String stName;
   final String profile;
-  final String stId;
+  final String stCode;
+  final int stId;
   final List<HomeInfoDetailsModel> details;
 
-  HomeStudentModel({required this.stName, required this.profile, required this.stId, required this.details});
+  HomeStudentModel(
+      {required this.stName, required this.profile, required this.stCode, required this.stId, required this.details});
 
   // Convert JSON to StudentModel
   factory HomeStudentModel.fromJson(Map<String, dynamic> json) {
@@ -15,7 +17,8 @@ class HomeStudentModel {
     List<HomeInfoDetailsModel> detailsList = detailsFromJson.map((e) => HomeInfoDetailsModel.fromJson(e)).toList();
     return HomeStudentModel(
       stName: json['st_name'] ?? '',
-      stId: json['st_ID'] ?? '',
+      stCode: json['st_ID'] ?? '',
+      stId: json['student_id'] ?? -1,
       profile: json['st_profile'] != null ? '$profileUrl/${json['st_profile']}' : '',
       details: detailsList,
     );

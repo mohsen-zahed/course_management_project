@@ -12,3 +12,5 @@ class StudentsListRequested extends HomeEvent {}
 class InfoCardsSummaryDataRequested extends HomeEvent {}
 
 class AdBannerDataRequested extends HomeEvent {}
+
+class StudentsHistoryRecordsRequested extends HomeEvent {}

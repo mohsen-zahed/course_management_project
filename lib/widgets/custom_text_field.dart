@@ -16,7 +16,9 @@ class CustomTextField extends StatelessWidget {
     required this.controller,
     this.keyboardInputType,
     this.onSuffixIconTap,
+    this.focusNode,
   });
+  final FocusNode? focusNode;
   final IconData prefixIcon;
   final IconData suffixIcon;
   final bool? showPassword;

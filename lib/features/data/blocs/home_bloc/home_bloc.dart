@@ -4,6 +4,7 @@ import 'package:course_management_project/features/data/models/ad_banner_model.d
 import 'package:course_management_project/features/data/models/home_student_model.dart';
 import 'package:course_management_project/features/data/models/student_model.dart';
 import 'package:course_management_project/features/data/repository/idata_repository.dart';
+import 'package:course_management_project/features/screens/main_screens/home_screen/home_screen.dart';
 import 'package:course_management_project/packages/dio_package/status_codes.dart';
 import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
@@ -18,6 +19,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<StudentsListRequested>(_onStudentsListRequested);
     on<AdBannerDataRequested>(_onAdBannerDataRequested);
     on<InfoCardsSummaryDataRequested>(_onInfoCardsSummaryDataRequested);
+    on<StudentsHistoryRecordsRequested>(_onStudentsHistoryRecordsRequested);
   }
 
   _onStudentsListRequested(StudentsListRequested event, Emitter<HomeState> emit) async {
@@ -119,6 +121,40 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       }
     } catch (e) {
       emit(InfoCardsSummaryDataFailure(errorMessage: e.toString()));
+    }
+  }
+
+  _onStudentsHistoryRecordsRequested(StudentsHistoryRecordsRequested event, Emitter<HomeState> emit) async {
+    emit(StudentsHistoryRecordsLoading());
+    try {
+      final result = await iDataRepository.fetchStudentsHistoryRecords();
+      emit(StudentsHistoryRecorddsSuccess(studentsHistoryList: result));
+    } on NoDataException catch (e) {
+      emit(StudentsHistoryRecordsFailure(errorMessage: e.message));
+    } on NoInternetException catch (e) {
+      emit(StudentsHistoryRecordsFailure(errorMessage: e.message));
+    } on NoServerException catch (e) {
+      emit(StudentsHistoryRecordsFailure(errorMessage: e.message));
+    } on AuthException catch (e) {
+      emit(StudentsHistoryRecordsFailure(errorMessage: e.message));
+    } on DioException catch (e) {
+      switch (e.type) {
+        case DioExceptionType.badResponse:
+          emit(StudentsHistoryRecordsFailure(errorMessage: e.message.toString()));
+          break;
+        case DioExceptionType.connectionError:
+          emit(const StudentsHistoryRecordsFailure(errorMessage: StatusCodes.noInternetConnectionCode));
+          break;
+        case DioExceptionType.connectionTimeout:
+          emit(const StudentsHistoryRecordsFailure(errorMessage: StatusCodes.noServerFoundCode));
+          break;
+        case DioExceptionType.unknown:
+          emit(const StudentsHistoryRecordsFailure(errorMessage: 'UKNOWN'));
+        default:
+          emit(const StudentsHistoryRecordsFailure(errorMessage: 'UKNOWN'));
+      }
+    } catch (e) {
+      emit(StudentsHistoryRecordsFailure(errorMessage: e.toString()));
     }
   }
 }

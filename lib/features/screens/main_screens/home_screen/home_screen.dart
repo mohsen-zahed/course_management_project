@@ -4,13 +4,19 @@ import 'package:course_management_project/features/data/blocs/auth_bloc/auth_blo
 import 'package:course_management_project/features/data/blocs/home_bloc/home_bloc.dart';
 import 'package:course_management_project/features/data/models/home_student_model.dart';
 import 'package:course_management_project/features/screens/initial_screens/login_screen/login_screen.dart';
+import 'package:course_management_project/features/screens/main_screens/comments_details_screen/comments_details_screen.dart';
+import 'package:course_management_project/features/screens/main_screens/daily_grades_screen/daily_grades_screen.dart';
 import 'package:course_management_project/features/screens/main_screens/home_screen/notifiers/home_notifiers.dart';
 import 'package:course_management_project/features/screens/main_screens/home_screen/widgets/home_appbar.dart';
 import 'package:course_management_project/features/screens/main_screens/home_screen/widgets/home_drawer.dart';
 import 'package:course_management_project/features/screens/main_screens/home_screen/widgets/home_report_card.dart';
+import 'package:course_management_project/features/screens/main_screens/time_table_screen/time_table_screen.dart';
+import 'package:course_management_project/features/screens/main_screens/transactions_details_screen/transactions_details_screen.dart';
+import 'package:course_management_project/helpers/date_formatters.dart';
 import 'package:course_management_project/helpers/exit_app_helper.dart';
 import 'package:course_management_project/helpers/helper_functions.dart';
 import 'package:course_management_project/packages/carousel_slider_package/carousel_slider_package.dart';
+import 'package:course_management_project/packages/dio_package/dio_package.dart';
 import 'package:course_management_project/packages/flushbar_package/flushbar_package.dart';
 import 'package:course_management_project/packages/dio_package/status_codes.dart';
 import 'package:course_management_project/packages/shimmer_package/shimmer_package.dart';
@@ -42,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _scaffoldKey = GlobalKey<ScaffoldState>();
     context.read<HomeBloc>().add(AdBannerDataRequested());
     context.read<HomeBloc>().add(InfoCardsSummaryDataRequested());
+    context.read<HomeBloc>().add(StudentsHistoryRecordsRequested());
   }
 
   @override
@@ -128,6 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             onRefresh: () async {
                               context.read<HomeBloc>().add(AdBannerDataRequested());
                               context.read<HomeBloc>().add(InfoCardsSummaryDataRequested());
+                              context.read<HomeBloc>().add(StudentsHistoryRecordsRequested());
                             },
                             child: SingleChildScrollView(
                               physics: const BouncingScrollPhysics(),
@@ -211,7 +219,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                             const SizedBox(width: 10),
                                                             Flexible(
                                                               child: Text(
-                                                                student.stId,
+                                                                student.stCode,
                                                                 style: Theme.of(context)
                                                                     .textTheme
                                                                     .bodySmall!
@@ -233,6 +241,60 @@ class _HomeScreenState extends State<HomeScreen> {
                                                             (index) {
                                                               return HomeReportCard(
                                                                 infoModel: student.details[index],
+                                                                onTap: () {
+                                                                  if (index == 0) {
+                                                                    Navigator.push(
+                                                                      context,
+                                                                      MaterialPageRoute(
+                                                                        builder: (context) {
+                                                                          return DailyGradesScreen(
+                                                                            studentId: student.stId,
+                                                                            type: 'dailyGrade',
+                                                                            studentName: student.stName,
+                                                                          );
+                                                                        },
+                                                                      ),
+                                                                    );
+                                                                  } else if (index == 1) {
+                                                                    Navigator.push(
+                                                                      context,
+                                                                      MaterialPageRoute(
+                                                                        builder: (context) {
+                                                                          return TransactionsDetailsScreen(
+                                                                            studentId: student.stId,
+                                                                            type: 'Transaction',
+                                                                            studentName: student.stName,
+                                                                          );
+                                                                        },
+                                                                      ),
+                                                                    );
+                                                                  } else if (index == 2) {
+                                                                    Navigator.push(
+                                                                      context,
+                                                                      MaterialPageRoute(
+                                                                        builder: (context) {
+                                                                          return TimeTableScreen(
+                                                                            studentId: student.stId,
+                                                                            studentName: student.stName,
+                                                                          );
+                                                                        },
+                                                                      ),
+                                                                    );
+                                                                  } else if (index == 3) {
+                                                                    Navigator.push(
+                                                                      context,
+                                                                      MaterialPageRoute(
+                                                                        builder: (context) {
+                                                                          return CommentsDetailsScreen(
+                                                                            studentId: student.stId,
+                                                                            type: 'Comments',
+                                                                            studentName: student.stName,
+                                                                          );
+                                                                        },
+                                                                      ),
+                                                                    );
+                                                                  }
+                                                                },
                                                               );
                                                             },
                                                           ),
@@ -257,6 +319,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 ),
                                               ),
                                             ),
+                                  const StudentTable(),
                                 ],
                               ),
                             ),
@@ -280,6 +343,418 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         );
       },
+    );
+  }
+}
+
+class StudentTable extends StatefulWidget {
+  const StudentTable({super.key});
+
+  @override
+  State<StudentTable> createState() => _StudentTableState();
+}
+
+class _StudentTableState extends State<StudentTable> {
+  var tableState;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<HomeBloc, HomeState>(
+      listener: (context, state) {
+        if (state is StudentsHistoryRecordsLoading) {
+          tableState = state;
+        } else if (state is StudentsHistoryRecordsFailure) {
+          tableState = state;
+          FlushbarPackage.showErrorFlushbar(context, 'خطایی رخ داده است!');
+        } else if (state is StudentsHistoryRecorddsSuccess) {
+          tableState = state;
+        }
+      },
+      builder: (context, state) {
+        if (tableState is StudentsHistoryRecordsLoading) {
+          return const CustomLoadingIndicator();
+        } else if (tableState is StudentsHistoryRecorddsSuccess) {
+          return ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: tableState.studentsHistoryList.length,
+            itemBuilder: (context, index) {
+              final student = tableState.studentsHistoryList[index];
+              return Card(
+                margin: const EdgeInsets.all(10),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Flexible(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'نام دانش‌آموز: ${student.stName}',
+                                  style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(
+                                  'کد دانش‌آموزی: ${student.stID}',
+                                  style: Theme.of(context).textTheme.bodySmall!.copyWith(fontWeight: FontWeight.bold),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                          CircleAvatar(
+                            radius: sizeConstants.imageXXSmall,
+                            backgroundImage: CachedNetworkImageProvider((student as Student).stProfile),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      const Text('حاضری:'),
+                      Table(
+                        border: TableBorder.all(),
+                        children: [
+                          TableRow(
+                            decoration: const BoxDecoration(color: kBlueCustomColor),
+                            children: [
+                              TableCell(
+                                  child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text('تاریخ', style: Theme.of(context).textTheme.bodyMedium),
+                              )),
+                              TableCell(
+                                  child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text('وضعیت', style: Theme.of(context).textTheme.bodyMedium),
+                              )),
+                              TableCell(
+                                  child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text('موضوع', style: Theme.of(context).textTheme.bodyMedium),
+                              )),
+                            ],
+                          ),
+                          ...student.attendance.map(
+                            (attendance) {
+                              return TableRow(
+                                children: [
+                                  TableCell(
+                                      child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(DateFormatters.convertToShamsiWithDayName(attendance.date)),
+                                  )),
+                                  TableCell(
+                                      child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(attendance.status),
+                                  )),
+                                  TableCell(
+                                      child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Text(attendance.subName),
+                                  )),
+                                ],
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      const Text('نمرات روزانه:'),
+                      Table(
+                        border: TableBorder.all(),
+                        children: [
+                          TableRow(
+                            decoration: const BoxDecoration(color: kBlueCustomColor),
+                            children: [
+                              TableCell(
+                                  child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text('تاریخ', style: Theme.of(context).textTheme.bodyMedium),
+                              )),
+                              TableCell(
+                                  child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text('نمرات', style: Theme.of(context).textTheme.bodyMedium),
+                              )),
+                              TableCell(
+                                  child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text('توضیحات', style: Theme.of(context).textTheme.bodyMedium),
+                              )),
+                              TableCell(
+                                  child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text('موضوع', style: Theme.of(context).textTheme.bodyMedium),
+                              )),
+                            ],
+                          ),
+                          ...student.dailyGrades.map((grade) {
+                            return TableRow(
+                              children: [
+                                TableCell(
+                                    child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(DateFormatters.convertToShamsiWithDayName(grade.date)),
+                                )),
+                                TableCell(
+                                    child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(grade.point.toString()),
+                                )),
+                                TableCell(
+                                    child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(grade.description),
+                                )),
+                                TableCell(
+                                    child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(grade.subName),
+                                )),
+                              ],
+                            );
+                          }),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      const Text('تبادلات پولی:'),
+                      Table(
+                        border: TableBorder.all(),
+                        children: [
+                          TableRow(
+                            decoration: const BoxDecoration(color: kBlueCustomColor),
+                            children: [
+                              TableCell(
+                                  child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text('تاریخ', style: Theme.of(context).textTheme.bodyMedium),
+                              )),
+                              TableCell(
+                                  child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text('مقدار', style: Theme.of(context).textTheme.bodyMedium),
+                              )),
+                              TableCell(
+                                  child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text('نوعیت', style: Theme.of(context).textTheme.bodyMedium),
+                              )),
+                              TableCell(
+                                  child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text('مضمون', style: Theme.of(context).textTheme.bodyMedium),
+                              )),
+                            ],
+                          ),
+                          ...student.transactions.map((transaction) {
+                            return TableRow(
+                              children: [
+                                TableCell(
+                                    child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(DateFormatters.convertToShamsiWithDayName(transaction.date)),
+                                )),
+                                TableCell(
+                                    child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(transaction.amount.toString()),
+                                )),
+                                TableCell(
+                                    child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(transaction.type),
+                                )),
+                                TableCell(
+                                    child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(transaction.subName),
+                                )),
+                              ],
+                            );
+                          }),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      const Text('نظریات:'),
+                      Table(
+                        border: TableBorder.all(),
+                        children: [
+                          TableRow(
+                            decoration: const BoxDecoration(color: kBlueCustomColor),
+                            children: [
+                              TableCell(
+                                  child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text('تاریخ', style: Theme.of(context).textTheme.bodyMedium),
+                              )),
+                              TableCell(
+                                  child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text('نظر', style: Theme.of(context).textTheme.bodyMedium),
+                              )),
+                            ],
+                          ),
+                          ...student.comments.map((comment) {
+                            return TableRow(
+                              children: [
+                                TableCell(
+                                    child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(DateFormatters.convertToShamsiWithDayName(comment.date)),
+                                )),
+                                TableCell(
+                                    child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(comment.comment),
+                                )),
+                              ],
+                            );
+                          }),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        } else {
+          return CustomErrorWidget(
+            onTap: () {
+              context.read<HomeBloc>().add(StudentsHistoryRecordsRequested());
+            },
+          );
+        }
+      },
+    );
+  }
+}
+
+class Attendance {
+  final String date;
+  final String status;
+  final String subName;
+
+  const Attendance({
+    required this.date,
+    required this.status,
+    required this.subName,
+  });
+
+  // fromJson constructor
+  factory Attendance.fromJson(Map<String, dynamic> json) {
+    return Attendance(
+      date: json['date'],
+      status: json['status'],
+      subName: json['sub_name'],
+    );
+  }
+}
+
+class DailyGrade {
+  final String date;
+  final int point;
+  final String description;
+  final String subName;
+
+  const DailyGrade({
+    required this.date,
+    required this.point,
+    required this.description,
+    required this.subName,
+  });
+
+  // fromJson constructor
+  factory DailyGrade.fromJson(Map<String, dynamic> json) {
+    return DailyGrade(
+      date: json['date'],
+      point: json['point'],
+      description: json['description'],
+      subName: json['sub_name'],
+    );
+  }
+}
+
+class Comments {
+  final String date;
+  final String comment;
+
+  const Comments({
+    required this.date,
+    required this.comment,
+  });
+
+  // fromJson constructor
+  factory Comments.fromJson(Map<String, dynamic> json) {
+    return Comments(
+      date: json['date'],
+      comment: json['comment'],
+    );
+  }
+}
+
+class Transaction {
+  final String date;
+  final int amount;
+  final String type;
+  final String subName;
+
+  const Transaction({
+    required this.date,
+    required this.amount,
+    required this.type,
+    required this.subName,
+  });
+
+  // fromJson constructor
+  factory Transaction.fromJson(Map<String, dynamic> json) {
+    return Transaction(
+      date: json['date'],
+      amount: json['amount'],
+      type: json['type'],
+      subName: json['sub_name'],
+    );
+  }
+}
+
+class Student {
+  final String stName;
+  final String stProfile;
+  final String stID;
+  final List<Attendance> attendance;
+  final List<DailyGrade> dailyGrades;
+  final List<Comments> comments;
+  final List<Transaction> transactions;
+
+  const Student({
+    required this.stName,
+    required this.stProfile,
+    required this.stID,
+    required this.attendance,
+    required this.dailyGrades,
+    required this.comments,
+    required this.transactions,
+  });
+
+  // fromJson constructor
+  factory Student.fromJson(Map<String, dynamic> json) {
+    return Student(
+      stName: json['st_name'],
+      stProfile: json['st_profile'] != null ? '$profileUrl/${json['st_profile']}' : '',
+      stID: json['st_ID'],
+      attendance: (json['attendance'] as List).map((item) => Attendance.fromJson(item)).toList(),
+      dailyGrades: (json['daily_grades'] as List).map((item) => DailyGrade.fromJson(item)).toList(),
+      comments: (json['comments'] as List).map((item) => Comments.fromJson(item)).toList(),
+      transactions: (json['transactions'] as List).map((item) => Transaction.fromJson(item)).toList(),
     );
   }
 }

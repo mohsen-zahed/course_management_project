@@ -54,3 +54,17 @@ class InfoCardsSummaryDataFailure extends HomeState {
 
   const InfoCardsSummaryDataFailure({required this.errorMessage});
 }
+
+class StudentsHistoryRecordsLoading extends HomeState {}
+
+class StudentsHistoryRecorddsSuccess extends HomeState {
+  final List<Student> studentsHistoryList;
+
+  const StudentsHistoryRecorddsSuccess({required this.studentsHistoryList});
+}
+
+class StudentsHistoryRecordsFailure extends HomeState {
+  final String errorMessage;
+
+  const StudentsHistoryRecordsFailure({required this.errorMessage});
+}

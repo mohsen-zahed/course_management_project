@@ -14,6 +14,7 @@ import 'package:course_management_project/features/data/providers/daily_grades_p
 import 'package:course_management_project/features/data/providers/news_provider.dart';
 import 'package:course_management_project/features/data/providers/transaction_provider.dart';
 import 'package:course_management_project/features/data/source/idata_data_source.dart';
+import 'package:course_management_project/features/screens/main_screens/home_screen/home_screen.dart';
 import 'package:course_management_project/packages/dio_package/dio_package.dart';
 import 'package:course_management_project/packages/get_it_package/get_it_package.dart';
 
@@ -129,6 +130,16 @@ class DataRepositoryImp implements IDataRepository {
           result[i].details[j] = result[i].details[j].copyWith(imagePath: AllLists.imagesList[j]);
         }
       }
+      return result;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<Student>> fetchStudentsHistoryRecords() async {
+    try {
+      final result = await iDataDataSource.fetchStudentsHistoryRecords();
       return result;
     } catch (e) {
       rethrow;

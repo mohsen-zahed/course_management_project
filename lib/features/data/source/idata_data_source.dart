@@ -12,9 +12,11 @@ import 'package:course_management_project/features/data/models/news_model.dart';
 import 'package:course_management_project/features/data/models/student_model.dart';
 import 'package:course_management_project/features/data/models/time_table_model.dart';
 import 'package:course_management_project/features/data/models/transaction_model.dart';
+import 'package:course_management_project/features/screens/main_screens/home_screen/home_screen.dart';
 import 'package:course_management_project/packages/dio_package/dio_package.dart';
 import 'package:course_management_project/packages/dio_package/status_codes.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 
 abstract class IDataDataSource {
   Future<List<StudentModel>> fetchStudentsList();
@@ -27,6 +29,7 @@ abstract class IDataDataSource {
   Future<List<NewsModel>> fetchNewsData(int page);
   Future<List<AdBannerModel>> fetchAdData();
   Future<List<HomeStudentModel>> fetchReportCardsData();
+  Future<List<Student>> fetchStudentsHistoryRecords();
 }
 
 class DataDataSourceImp implements IDataDataSource {
@@ -184,6 +187,8 @@ class DataDataSourceImp implements IDataDataSource {
   @override
   Future<List<DailyGradeModel>> fetchStudentDailyGradeDetails(int studentId, String type, int page) async {
     try {
+      debugPrint('student_id: $studentId');
+      debugPrint('type: $type');
       cancelToken = CancelToken();
       final response = await httpClient
           .get(
@@ -304,6 +309,32 @@ class DataDataSourceImp implements IDataDataSource {
         throw const NoDataException(StatusCodes.noDataReceivedCode);
       } else if (response.statusCode == 200 && response.data is Map) {
         return (response.data['data'] as List).map((studentJson) => HomeStudentModel.fromJson(studentJson)).toList();
+      } else if (response.statusCode == 200 && response.data is! Map) {
+        throw const AuthException(StatusCodes.unAthurizedCode);
+      } else {
+        throw UnknowException('${response.statusMessage} ${response.statusCode}');
+      }
+    } on SocketException catch (_) {
+      throw const NoInternetException(StatusCodes.noInternetConnectionCode);
+    } on TimeoutException catch (_) {
+      throw const NoServerException(StatusCodes.noServerFoundCode);
+    }
+  }
+
+  @override
+  Future<List<Student>> fetchStudentsHistoryRecords() async {
+    try {
+      cancelToken = CancelToken();
+      final response = await httpClient
+          .get(
+            homeInfoReportGetApi,
+            cancelToken: cancelToken,
+          )
+          .timeout(const Duration(seconds: defaultTimeOut));
+      if (response.data == null) {
+        throw const NoDataException(StatusCodes.noDataReceivedCode);
+      } else if (response.statusCode == 200 && response.data is Map) {
+        return (response.data['summary'] as List).map((e) => Student.fromJson(e)).toList();
       } else if (response.statusCode == 200 && response.data is! Map) {
         throw const AuthException(StatusCodes.unAthurizedCode);
       } else {

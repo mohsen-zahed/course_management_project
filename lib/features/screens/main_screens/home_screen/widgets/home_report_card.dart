@@ -6,43 +6,47 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:text_scroll/text_scroll.dart';
 
 class HomeReportCard extends StatelessWidget {
-  const HomeReportCard({super.key, required this.infoModel});
+  const HomeReportCard({super.key, required this.infoModel, required this.onTap});
   final HomeInfoDetailsModel infoModel;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: kBlueCustomColor.withOpacity(0.3),
-      elevation: 0,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Image.asset(infoModel.imagePath, height: sizeConstants.imageXSmall),
-                Container(
-                  width: sizeConstants.imageSmall + 10.w,
-                  height: sizeConstants.imageXSmall,
-                  padding: const EdgeInsets.all(5),
-                  decoration: BoxDecoration(
-                    color: kBlueCustomColor.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(5),
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+        color: kBlueCustomColor.withOpacity(0.3),
+        elevation: 0,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 15),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Image.asset(infoModel.imagePath, height: sizeConstants.imageXSmall),
+                  Container(
+                    width: sizeConstants.imageSmall + 10.w,
+                    height: sizeConstants.imageXSmall,
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: kBlueCustomColor.withOpacity(0.7),
+                      borderRadius: BorderRadius.circular(5),
+                    ),
+                    alignment: Alignment.center,
+                    child: TextScrollPackage(text: infoModel.value.toString()),
                   ),
-                  alignment: Alignment.center,
-                  child: TextScrollPackage(text: infoModel.value.toString()),
-                ),
-              ],
-            ),
-            const SizedBox(height: 15),
-            Text(
-              _getLabel(infoModel.label),
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ],
+                ],
+              ),
+              const SizedBox(height: 15),
+              Text(
+                _getLabel(infoModel.label),
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ],
+          ),
         ),
       ),
     );

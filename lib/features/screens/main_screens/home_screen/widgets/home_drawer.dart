@@ -95,6 +95,17 @@ class HomeDrawer extends StatelessWidget {
           CustomListTile(
             leading: Icons.people_alt_rounded,
             tileColor: kBlueColor,
+            title: 'خانه',
+            onTap: () {
+              if (scaffoldKey.currentState!.isDrawerOpen) {
+                scaffoldKey.currentState!.closeDrawer();
+              }
+            },
+          ),
+          const SizedBox(height: 20),
+          CustomListTile(
+            leading: Icons.people_alt_rounded,
+            tileColor: kBlueColor,
             title: 'لیست شاگردان',
             onTap: () {
               if (scaffoldKey.currentState!.isDrawerOpen) {

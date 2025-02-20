@@ -25,6 +25,8 @@ class _LoginScreenState extends State<LoginScreen> {
   late GlobalKey<FormState> _formKey;
   late TextEditingController _emailController;
   late TextEditingController _passwordController;
+  late FocusNode _emailFocusNode;
+  late FocusNode _passwordFocusNode;
 
   @override
   void initState() {
@@ -33,6 +35,8 @@ class _LoginScreenState extends State<LoginScreen> {
     _passwordController = TextEditingController();
     _formKey = GlobalKey<FormState>();
     LoginNotifiers.showPasswordValueNotifier = ValueNotifier<bool>(true);
+    _emailFocusNode = FocusNode();
+    _passwordFocusNode = FocusNode();
   }
 
   @override
@@ -41,6 +45,8 @@ class _LoginScreenState extends State<LoginScreen> {
     _passwordController.dispose();
     _formKey.currentState?.dispose();
     LoginNotifiers.showPasswordValueNotifier.dispose();
+    _emailFocusNode.dispose();
+    _passwordFocusNode.dispose();
     super.dispose();
   }
 
@@ -109,6 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 children: [
                   CustomTextField(
+                    focusNode: _emailFocusNode,
                     prefixIcon: Icons.email,
                     suffixIcon: Icons.alternate_email_rounded,
                     hintText: 'ایمیل آدرس',
@@ -118,6 +125,14 @@ class _LoginScreenState extends State<LoginScreen> {
                       _formKey.currentState?.validate();
                       _emailController.text = value;
                     },
+                    onSubmit: (value) {
+                      print('value: $value');
+                      FocusScope.of(context).requestFocus(_passwordFocusNode);
+                      if (value.isNotEmpty) {
+                        print('value: $value');
+                        // FocusScope.of(context).unfocus();
+                      }
+                    },
                     keyboardInputType: TextInputType.emailAddress,
                   ),
                   const SizedBox(height: 20),
@@ -125,6 +140,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     valueListenable: LoginNotifiers.showPasswordValueNotifier,
                     builder: (context, showPassword, child) {
                       return CustomTextField(
+                        focusNode: _passwordFocusNode,
                         prefixIcon: Icons.lock,
                         suffixIcon: Icons.remove_red_eye,
                         showPassword: showPassword,
