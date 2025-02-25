@@ -14,6 +14,21 @@ ThemeData lightTheme(BuildContext context) {
         TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
       },
     ),
+
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: const WidgetStatePropertyAll(kBlueColor),
+        foregroundColor: const WidgetStatePropertyAll(kWhiteColor),
+        textStyle: WidgetStatePropertyAll(
+          Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold, color: kWhiteColor),
+        ),
+        shape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+        ),
+      ),
+    ),
     cardTheme: CardTheme(
       color: kWhiteColor,
       elevation: 10,
@@ -77,6 +92,20 @@ ThemeData darkTheme(BuildContext context) {
         borderRadius: BorderRadius.circular(15),
       ),
       actionsPadding: const EdgeInsets.only(bottom: 10, left: 10),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ButtonStyle(
+        backgroundColor: const WidgetStatePropertyAll(kBlueColor),
+        foregroundColor: const WidgetStatePropertyAll(kWhiteColor),
+        textStyle: WidgetStatePropertyAll(
+          Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold, color: kWhiteColor),
+        ),
+        shape: WidgetStatePropertyAll(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+        ),
+      ),
     ),
     textButtonTheme: TextButtonThemeData(
       style: ButtonStyle(

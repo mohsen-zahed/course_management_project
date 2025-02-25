@@ -1,9 +1,12 @@
 import 'package:course_management_project/config/constants/images_paths.dart';
+import 'package:course_management_project/features/data/providers/internet_provider.dart';
 import 'package:course_management_project/features/screens/initial_screens/login_screen/login_screen.dart';
 import 'package:course_management_project/features/screens/main_screens/home_screen/home_screen.dart';
+import 'package:course_management_project/features/screens/main_screens/no_internet_screen/no_internet_screen.dart';
 import 'package:course_management_project/packages/flutter_secure_storage_package/flutter_secure_storage_const.dart';
 import 'package:course_management_project/packages/flutter_secure_storage_package/flutter_secure_storage_package.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -25,11 +28,15 @@ class _SplashScreenState extends State<SplashScreen> {
 
   _isUserLogin() async {
     try {
-      final accessToken = await FlutterSecureStoragePackage.fetchFromSecureStorage(accessTokenStorageKey);
-      if (accessToken == null || accessToken.isEmpty) {
-        Navigator.pushNamedAndRemoveUntil(context, LoginScreen.id, (route) => false);
+      if (context.read<InternetProvider>().isConnected) {
+        final accessToken = await FlutterSecureStoragePackage.fetchFromSecureStorage(accessTokenStorageKey);
+        if (accessToken == null || accessToken.isEmpty) {
+          Navigator.pushNamedAndRemoveUntil(context, LoginScreen.id, (route) => false);
+        } else {
+          Navigator.pushNamedAndRemoveUntil(context, HomeScreen.id, (route) => false);
+        }
       } else {
-        Navigator.pushNamedAndRemoveUntil(context, HomeScreen.id, (route) => false);
+        Navigator.pushNamedAndRemoveUntil(context, NoInternetScreen.id, (route) => false);
       }
     } catch (e) {
       Navigator.pushNamedAndRemoveUntil(context, LoginScreen.id, (route) => false);
@@ -70,7 +77,9 @@ class _SplashScreenState extends State<SplashScreen> {
               bottom: 10.h,
               right: 0,
               left: 0,
-              child: Align(alignment: Alignment.bottomCenter,child: Text('از طرف تیم اشتراک دانش', style: Theme.of(context).textTheme.bodySmall)),
+              child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Text('از طرف تیم اشتراک دانش', style: Theme.of(context).textTheme.bodySmall)),
             ),
           ],
         ),

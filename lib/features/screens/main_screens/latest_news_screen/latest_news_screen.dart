@@ -3,7 +3,9 @@ import 'package:course_management_project/features/data/blocs/news_bloc/news_blo
 import 'package:course_management_project/features/data/models/news_model.dart';
 import 'package:course_management_project/features/data/providers/news_provider.dart';
 import 'package:course_management_project/features/screens/main_screens/latest_news_screen/widgets/post_widget.dart';
+import 'package:course_management_project/features/screens/main_screens/no_internet_screen/no_internet_screen.dart';
 import 'package:course_management_project/packages/dio_package/dio_package.dart';
+import 'package:course_management_project/packages/dio_package/status_codes.dart';
 import 'package:course_management_project/packages/flushbar_package/flushbar_package.dart';
 import 'package:course_management_project/utils/media_query.dart';
 import 'package:course_management_project/widgets/custom_cached_network_image.dart';
@@ -84,7 +86,11 @@ class _LatestNewsScreenState extends State<LatestNewsScreen> {
                   BlocConsumer<NewsBloc, NewsState>(
                     listener: (context, state) {
                       if (state is NewsFailure) {
-                        FlushbarPackage.showErrorFlushbar(context, state.errorMessage);
+                        if (state.errorMessage.contains(StatusCodes.noInternetConnectionCode)) {
+                          Navigator.pushNamedAndRemoveUntil(context, NoInternetScreen.id, (route) => false);
+                        } else {
+                          FlushbarPackage.showErrorFlushbar(context, state.errorMessage);
+                        }
                       }
                     },
                     builder: (context, state) {

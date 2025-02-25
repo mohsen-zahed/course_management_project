@@ -158,21 +158,22 @@ class _AttendanceDetailsScreenState extends State<AttendanceDetailsScreen> {
                                             } else if (filterNotifier == 'رخصتی') {
                                               sortedList = List.from(
                                                 attendanceProvider.attendanceList.where((element) =>
-                                                    _getPresentStatus(element.status.trim()) == filterNotifier &&
+                                                    getPresentStatus(element.status.trim()) == filterNotifier &&
                                                     !DateFormatters.convertToShamsiWithDayName(element.date)
                                                         .contains('جمعه')),
                                               );
                                             } else {
                                               sortedList = List.from(
                                                 attendanceProvider.attendanceList.where((element) =>
-                                                    _getPresentStatus(element.status.trim()) == filterNotifier),
+                                                    getPresentStatus(element.status.trim()) == filterNotifier),
                                               );
                                             }
                                           }
                                           return ListView.builder(
                                             controller: _scrollController,
                                             itemCount: sortedList.length + 1,
-                                            padding: EdgeInsets.fromLTRB(0, sizeConstants.buttonHeightLarge + 10, 0, 10),
+                                            padding:
+                                                EdgeInsets.fromLTRB(0, sizeConstants.buttonHeightLarge + 10, 0, 10),
                                             physics: const BouncingScrollPhysics(),
                                             itemBuilder: (context, index) {
                                               // Ensure that we are checking for the range of the loaded items.
@@ -189,7 +190,7 @@ class _AttendanceDetailsScreenState extends State<AttendanceDetailsScreen> {
                                                           ? kRedCustom1Color
                                                           : const Color.fromARGB(178, 99, 50, 47)
                                                       : null,
-                                                  title: '$date\n${_getPresentStatus(sortedList[index].status)}',
+                                                  title: '$date\n${getPresentStatus(sortedList[index].status)}',
                                                   subTitle: sortedList[index].bookName,
                                                   trailing: Container(
                                                     width: 55,
@@ -225,7 +226,7 @@ class _AttendanceDetailsScreenState extends State<AttendanceDetailsScreen> {
                                           builder: (context, filterNotifier, child) {
                                             return Container(
                                               width: getMediaQueryWidth(context),
-                                              constraints: BoxConstraints(minHeight: 50.h,maxHeight: 60.h),
+                                              constraints: BoxConstraints(minHeight: 50.h, maxHeight: 60.h),
                                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                                               alignment: AlignmentDirectional.center,
                                               decoration: BoxDecoration(
@@ -318,7 +319,7 @@ class _AttendanceDetailsScreenState extends State<AttendanceDetailsScreen> {
   //         ),
   //   ),
 
-  _getPresentStatus(String presentStatus) {
+  getPresentStatus(String presentStatus) {
     switch (presentStatus) {
       case 'present':
         return 'حاضر';
@@ -346,6 +347,21 @@ class _AttendanceDetailsScreenState extends State<AttendanceDetailsScreen> {
       default:
         return isThemeLight(context) ? kBlackColor87 : kWhiteColor;
     }
+  }
+}
+
+getPresentStatus(String presentStatus) {
+  switch (presentStatus) {
+    case 'present':
+      return 'حاضر';
+    case 'sick':
+      return 'اجازه';
+    case 'absent':
+      return 'غیر حاضر';
+    case 'leave':
+      return 'رخصتی';
+    default:
+      return presentStatus;
   }
 }
 

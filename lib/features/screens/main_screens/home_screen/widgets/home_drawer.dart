@@ -7,6 +7,7 @@ import 'package:course_management_project/features/screens/main_screens/about_us
 import 'package:course_management_project/features/screens/main_screens/latest_news_screen/latest_news_screen.dart';
 import 'package:course_management_project/features/screens/main_screens/students_screen/students_screen.dart';
 import 'package:course_management_project/packages/flushbar_package/flushbar_package.dart';
+import 'package:course_management_project/utils/app_theme.dart';
 import 'package:course_management_project/utils/media_query.dart';
 import 'package:course_management_project/widgets/custom_list_tile.dart';
 import 'package:flutter/cupertino.dart';
@@ -30,7 +31,7 @@ class HomeDrawer extends StatelessWidget {
             children: [
               Container(
                 width: getMediaQueryWidth(context),
-                height: 170.h,
+                height: sizeConstants.imageLargeMed,
                 padding: const EdgeInsets.symmetric(horizontal: 15),
                 decoration: const BoxDecoration(
                   image: DecorationImage(

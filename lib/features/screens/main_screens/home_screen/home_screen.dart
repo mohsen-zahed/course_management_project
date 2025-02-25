@@ -4,12 +4,14 @@ import 'package:course_management_project/features/data/blocs/auth_bloc/auth_blo
 import 'package:course_management_project/features/data/blocs/home_bloc/home_bloc.dart';
 import 'package:course_management_project/features/data/models/home_student_model.dart';
 import 'package:course_management_project/features/screens/initial_screens/login_screen/login_screen.dart';
+import 'package:course_management_project/features/screens/main_screens/attendance_details_screen/attendance_details_screen.dart';
 import 'package:course_management_project/features/screens/main_screens/comments_details_screen/comments_details_screen.dart';
 import 'package:course_management_project/features/screens/main_screens/daily_grades_screen/daily_grades_screen.dart';
 import 'package:course_management_project/features/screens/main_screens/home_screen/notifiers/home_notifiers.dart';
 import 'package:course_management_project/features/screens/main_screens/home_screen/widgets/home_appbar.dart';
 import 'package:course_management_project/features/screens/main_screens/home_screen/widgets/home_drawer.dart';
 import 'package:course_management_project/features/screens/main_screens/home_screen/widgets/home_report_card.dart';
+import 'package:course_management_project/features/screens/main_screens/no_internet_screen/no_internet_screen.dart';
 import 'package:course_management_project/features/screens/main_screens/time_table_screen/time_table_screen.dart';
 import 'package:course_management_project/features/screens/main_screens/transactions_details_screen/transactions_details_screen.dart';
 import 'package:course_management_project/helpers/date_formatters.dart';
@@ -68,6 +70,9 @@ class _HomeScreenState extends State<HomeScreen> {
           infoState = state;
         } else if (state is InfoCardsSummaryDataFailure) {
           infoState = state;
+          if (state.errorMessage.contains(StatusCodes.noInternetConnectionCode)) {
+            Navigator.pushNamedAndRemoveUntil(context, NoInternetScreen.id, (route) => false);
+          }
         } else if (state is InfoCardsSummaryDataSuccess) {
           infoState = state;
         }
@@ -75,7 +80,11 @@ class _HomeScreenState extends State<HomeScreen> {
           bannerState = state;
         } else if (state is AdBannerListFailure) {
           bannerState = state;
-          FlushbarPackage.showErrorFlushbar(context, state.errorMessage);
+          if (bannerState.errorMessage.contains(StatusCodes.noInternetConnectionCode)) {
+            Navigator.pushNamedAndRemoveUntil(context, NoInternetScreen.id, (route) => false);
+          } else {
+            FlushbarPackage.showErrorFlushbar(context, state.errorMessage);
+          }
         } else if (state is AdBannerListSuccess) {
           bannerState = state;
         }
@@ -93,7 +102,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 }
               });
             } else if (state is LogoutFailure) {
-              if (state.errorMessage.contains(StatusCodes.unAthurizedCode)) {
+              if (state.errorMessage.contains(StatusCodes.noInternetConnectionCode)) {
+                Navigator.pushNamedAndRemoveUntil(context, NoInternetScreen.id, (route) => false);
+              } else if (state.errorMessage.contains(StatusCodes.unAthurizedCode)) {
                 FlushbarPackage.showErrorFlushbar(context, 'خطایی در هنگام خروج از حساب رخ داده است!');
               } else {
                 FlushbarPackage.showErrorFlushbar(context, 'خطایی رخ داده است، لطفا دوباره امتحان کنید!');
@@ -380,251 +391,291 @@ class _StudentTableState extends State<StudentTable> {
             itemCount: tableState.studentsHistoryList.length,
             itemBuilder: (context, index) {
               final student = tableState.studentsHistoryList[index];
-              return Card(
-                margin: const EdgeInsets.all(10),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Flexible(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
+              return student.attendance.isNotEmpty ||
+                      student.dailyGrades.isNotEmpty ||
+                      student.transactions.isNotEmpty ||
+                      student.comments.isNotEmpty
+                  ? Card(
+                      margin: const EdgeInsets.all(10),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  'نام دانش‌آموز: ${student.stName}',
-                                  style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.bold),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                Flexible(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'نام دانش‌آموز: ${student.stName}',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge!
+                                            .copyWith(fontWeight: FontWeight.bold),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Text(
+                                        'کد دانش‌آموزی: ${student.stID}',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall!
+                                            .copyWith(fontWeight: FontWeight.bold),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                Text(
-                                  'کد دانش‌آموزی: ${student.stID}',
-                                  style: Theme.of(context).textTheme.bodySmall!.copyWith(fontWeight: FontWeight.bold),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
+                                CircleAvatar(
+                                  radius: sizeConstants.imageXXSmall,
+                                  backgroundImage: CachedNetworkImageProvider((student as Student).stProfile),
                                 ),
                               ],
                             ),
-                          ),
-                          CircleAvatar(
-                            radius: sizeConstants.imageXXSmall,
-                            backgroundImage: CachedNetworkImageProvider((student as Student).stProfile),
-                          ),
-                        ],
+                            const SizedBox(height: 10),
+                            student.attendance.isNotEmpty ? const Text('حاضری:') : SizedBox.fromSize(size: Size.zero),
+                            student.attendance.isNotEmpty
+                                ? Table(
+                                    border: TableBorder.all(),
+                                    children: [
+                                      TableRow(
+                                        decoration: const BoxDecoration(color: kBlueCustomColor),
+                                        children: [
+                                          TableCell(
+                                              child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text('تاریخ', style: Theme.of(context).textTheme.bodyMedium),
+                                          )),
+                                          TableCell(
+                                              child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Center(
+                                              child: Text(
+                                                'وضعیت',
+                                                style: Theme.of(context).textTheme.bodyMedium,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                          )),
+                                          TableCell(
+                                              child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text('موضوع', style: Theme.of(context).textTheme.bodyMedium),
+                                          )),
+                                        ],
+                                      ),
+                                      ...student.attendance.map(
+                                        (attendance) {
+                                          return TableRow(
+                                            children: [
+                                              TableCell(
+                                                  child: Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: Text(DateFormatters.convertToShamsiWithDayName(attendance.date)),
+                                              )),
+                                              TableCell(
+                                                  verticalAlignment: TableCellVerticalAlignment.middle,
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(8.0),
+                                                    child: Center(child: Text(getPresentStatus(attendance.status))),
+                                                  )),
+                                              TableCell(
+                                                  child: Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: Text(attendance.subName),
+                                              )),
+                                            ],
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  )
+                                : SizedBox.fromSize(size: Size.zero),
+                            const SizedBox(height: 10),
+                            student.dailyGrades.isNotEmpty
+                                ? const Text('نمرات روزانه:')
+                                : SizedBox.fromSize(size: Size.zero),
+                            student.dailyGrades.isNotEmpty
+                                ? Table(
+                                    border: TableBorder.all(),
+                                    children: [
+                                      TableRow(
+                                        decoration: const BoxDecoration(color: kBlueCustomColor),
+                                        children: [
+                                          TableCell(
+                                              child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text('تاریخ', style: Theme.of(context).textTheme.bodyMedium),
+                                          )),
+                                          TableCell(
+                                              child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Center(
+                                              child: Text(
+                                                'نمرات',
+                                                style: Theme.of(context).textTheme.bodyMedium,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                          )),
+                                          TableCell(
+                                              child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text('توضیحات', style: Theme.of(context).textTheme.bodyMedium),
+                                          )),
+                                          TableCell(
+                                              child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text('موضوع', style: Theme.of(context).textTheme.bodyMedium),
+                                          )),
+                                        ],
+                                      ),
+                                      ...student.dailyGrades.map((grade) {
+                                        return TableRow(
+                                          children: [
+                                            TableCell(
+                                                child: Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: Text(DateFormatters.convertToShamsiWithDayName(grade.date)),
+                                            )),
+                                            TableCell(
+                                                verticalAlignment: TableCellVerticalAlignment.middle,
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(8.0),
+                                                  child: Center(child: Text(grade.point.toString())),
+                                                )),
+                                            TableCell(
+                                                child: Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: Text(grade.description),
+                                            )),
+                                            TableCell(
+                                                child: Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: Text(grade.subName),
+                                            )),
+                                          ],
+                                        );
+                                      }),
+                                    ],
+                                  )
+                                : SizedBox.fromSize(size: Size.zero),
+                            const SizedBox(height: 10),
+                            student.transactions.isNotEmpty
+                                ? const Text('تبادلات پولی:')
+                                : SizedBox.fromSize(size: Size.zero),
+                            student.transactions.isNotEmpty
+                                ? Table(
+                                    border: TableBorder.all(),
+                                    children: [
+                                      TableRow(
+                                        decoration: const BoxDecoration(color: kBlueCustomColor),
+                                        children: [
+                                          TableCell(
+                                              child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text('تاریخ', style: Theme.of(context).textTheme.bodyMedium),
+                                          )),
+                                          TableCell(
+                                              verticalAlignment: TableCellVerticalAlignment.middle,
+                                              child: Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: Center(
+                                                    child:
+                                                        Text('مقدار', style: Theme.of(context).textTheme.bodyMedium)),
+                                              )),
+                                          TableCell(
+                                              child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text('نوعیت', style: Theme.of(context).textTheme.bodyMedium),
+                                          )),
+                                          TableCell(
+                                              child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text('مضمون', style: Theme.of(context).textTheme.bodyMedium),
+                                          )),
+                                        ],
+                                      ),
+                                      ...student.transactions.map((transaction) {
+                                        return TableRow(
+                                          children: [
+                                            TableCell(
+                                                child: Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: Text(DateFormatters.convertToShamsiWithDayName(transaction.date)),
+                                            )),
+                                            TableCell(
+                                                child: Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: Text(transaction.amount.toString()),
+                                            )),
+                                            TableCell(
+                                                child: Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: Text(transaction.type),
+                                            )),
+                                            TableCell(
+                                                child: Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: Text(transaction.subName),
+                                            )),
+                                          ],
+                                        );
+                                      }),
+                                    ],
+                                  )
+                                : SizedBox.fromSize(size: Size.zero),
+                            const SizedBox(height: 10),
+                            student.comments.isNotEmpty ? const Text('نظریات:') : SizedBox.fromSize(size: Size.zero),
+                            student.comments.isNotEmpty
+                                ? Table(
+                                    border: TableBorder.all(),
+                                    children: [
+                                      TableRow(
+                                        decoration: const BoxDecoration(color: kBlueCustomColor),
+                                        children: [
+                                          TableCell(
+                                              child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text('تاریخ', style: Theme.of(context).textTheme.bodyMedium),
+                                          )),
+                                          TableCell(
+                                              child: Padding(
+                                            padding: const EdgeInsets.all(8.0),
+                                            child: Text('نظر', style: Theme.of(context).textTheme.bodyMedium),
+                                          )),
+                                        ],
+                                      ),
+                                      ...student.comments.map((comment) {
+                                        return TableRow(
+                                          children: [
+                                            TableCell(
+                                                child: Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: Text(DateFormatters.convertToShamsiWithDayName(comment.date)),
+                                            )),
+                                            TableCell(
+                                                child: Padding(
+                                              padding: const EdgeInsets.all(8.0),
+                                              child: Text(comment.comment),
+                                            )),
+                                          ],
+                                        );
+                                      }),
+                                    ],
+                                  )
+                                : SizedBox.fromSize(size: Size.zero),
+                          ],
+                        ),
                       ),
-                      const SizedBox(height: 10),
-                      const Text('حاضری:'),
-                      Table(
-                        border: TableBorder.all(),
-                        children: [
-                          TableRow(
-                            decoration: const BoxDecoration(color: kBlueCustomColor),
-                            children: [
-                              TableCell(
-                                  child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text('تاریخ', style: Theme.of(context).textTheme.bodyMedium),
-                              )),
-                              TableCell(
-                                  child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text('وضعیت', style: Theme.of(context).textTheme.bodyMedium),
-                              )),
-                              TableCell(
-                                  child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text('موضوع', style: Theme.of(context).textTheme.bodyMedium),
-                              )),
-                            ],
-                          ),
-                          ...student.attendance.map(
-                            (attendance) {
-                              return TableRow(
-                                children: [
-                                  TableCell(
-                                      child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(DateFormatters.convertToShamsiWithDayName(attendance.date)),
-                                  )),
-                                  TableCell(
-                                      child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(attendance.status),
-                                  )),
-                                  TableCell(
-                                      child: Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Text(attendance.subName),
-                                  )),
-                                ],
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      const Text('نمرات روزانه:'),
-                      Table(
-                        border: TableBorder.all(),
-                        children: [
-                          TableRow(
-                            decoration: const BoxDecoration(color: kBlueCustomColor),
-                            children: [
-                              TableCell(
-                                  child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text('تاریخ', style: Theme.of(context).textTheme.bodyMedium),
-                              )),
-                              TableCell(
-                                  child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text('نمرات', style: Theme.of(context).textTheme.bodyMedium),
-                              )),
-                              TableCell(
-                                  child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text('توضیحات', style: Theme.of(context).textTheme.bodyMedium),
-                              )),
-                              TableCell(
-                                  child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text('موضوع', style: Theme.of(context).textTheme.bodyMedium),
-                              )),
-                            ],
-                          ),
-                          ...student.dailyGrades.map((grade) {
-                            return TableRow(
-                              children: [
-                                TableCell(
-                                    child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(DateFormatters.convertToShamsiWithDayName(grade.date)),
-                                )),
-                                TableCell(
-                                    child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(grade.point.toString()),
-                                )),
-                                TableCell(
-                                    child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(grade.description),
-                                )),
-                                TableCell(
-                                    child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(grade.subName),
-                                )),
-                              ],
-                            );
-                          }),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      const Text('تبادلات پولی:'),
-                      Table(
-                        border: TableBorder.all(),
-                        children: [
-                          TableRow(
-                            decoration: const BoxDecoration(color: kBlueCustomColor),
-                            children: [
-                              TableCell(
-                                  child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text('تاریخ', style: Theme.of(context).textTheme.bodyMedium),
-                              )),
-                              TableCell(
-                                  child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text('مقدار', style: Theme.of(context).textTheme.bodyMedium),
-                              )),
-                              TableCell(
-                                  child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text('نوعیت', style: Theme.of(context).textTheme.bodyMedium),
-                              )),
-                              TableCell(
-                                  child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text('مضمون', style: Theme.of(context).textTheme.bodyMedium),
-                              )),
-                            ],
-                          ),
-                          ...student.transactions.map((transaction) {
-                            return TableRow(
-                              children: [
-                                TableCell(
-                                    child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(DateFormatters.convertToShamsiWithDayName(transaction.date)),
-                                )),
-                                TableCell(
-                                    child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(transaction.amount.toString()),
-                                )),
-                                TableCell(
-                                    child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(transaction.type),
-                                )),
-                                TableCell(
-                                    child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(transaction.subName),
-                                )),
-                              ],
-                            );
-                          }),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-                      const Text('نظریات:'),
-                      Table(
-                        border: TableBorder.all(),
-                        children: [
-                          TableRow(
-                            decoration: const BoxDecoration(color: kBlueCustomColor),
-                            children: [
-                              TableCell(
-                                  child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text('تاریخ', style: Theme.of(context).textTheme.bodyMedium),
-                              )),
-                              TableCell(
-                                  child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text('نظر', style: Theme.of(context).textTheme.bodyMedium),
-                              )),
-                            ],
-                          ),
-                          ...student.comments.map((comment) {
-                            return TableRow(
-                              children: [
-                                TableCell(
-                                    child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(DateFormatters.convertToShamsiWithDayName(comment.date)),
-                                )),
-                                TableCell(
-                                    child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(comment.comment),
-                                )),
-                              ],
-                            );
-                          }),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              );
+                    )
+                  : SizedBox.fromSize(size: Size.zero);
             },
           );
         } else {

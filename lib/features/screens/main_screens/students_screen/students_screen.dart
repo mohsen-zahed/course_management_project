@@ -34,7 +34,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
             Navigator.pushNamedAndRemoveUntil(context, LoginScreen.id, (route) => false);
             FlushbarPackage.showFlushbar(context, 'لطفا دوباره وارد حساب خود شوید!');
           } else if (state.errorMessage.contains(StatusCodes.noInternetConnectionCode)) {
-            FlushbarPackage.showFlushbar(context, 'اتصال به اینترنت خود را چک کنید!');
+            FlushbarPackage.showErrorFlushbar(context, 'اتصال به اینترنت خود را چک کنید!');
           } else if (state.errorMessage.contains(StatusCodes.noServerFoundCode)) {
             FlushbarPackage.showFlushbar(context, 'خطایی از طرف سرور رخ داده است، دوباره امتحان کنید!');
           } else if (state.errorMessage.contains(StatusCodes.badStateCode)) {
@@ -81,8 +81,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
                               const Icon(Icons.error, color: kRedColor, size: 120),
                               const SizedBox(height: 10),
                               Text('خطا در دریافت اطلاعات',
-                                  style:
-                                      Theme.of(context).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold)),
+                                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.bold)),
                               const SizedBox(height: 10),
                               Center(
                                 child: GestureDetector(
@@ -92,11 +91,13 @@ class _StudentsScreenState extends State<StudentsScreen> {
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Text('تلاش دوباره',
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .titleMedium!
-                                              .copyWith(fontWeight: FontWeight.w600)),
+                                      Text(
+                                        'تلاش دوباره',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium!
+                                            .copyWith(fontWeight: FontWeight.w600),
+                                      ),
                                       const SizedBox(width: 5),
                                       const Icon(Icons.refresh, size: 18),
                                     ],

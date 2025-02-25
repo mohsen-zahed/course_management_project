@@ -126,10 +126,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       _emailController.text = value;
                     },
                     onSubmit: (value) {
-                      print('value: $value');
                       FocusScope.of(context).requestFocus(_passwordFocusNode);
                       if (value.isNotEmpty) {
-                        print('value: $value');
                         // FocusScope.of(context).unfocus();
                       }
                     },

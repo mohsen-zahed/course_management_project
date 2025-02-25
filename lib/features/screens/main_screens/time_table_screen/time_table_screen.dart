@@ -217,7 +217,7 @@ class _TimeTableScreenState extends State<TimeTableScreen> {
                                                         Flexible(
                                                           child: Text(
                                                             DateFormatters.convertToShamsiWithDayName(
-                                                                state.timeTableList[index].endDate,
+                                                                state.timeTableList[index].startDate,
                                                                 hideDay: true),
                                                             maxLines: 1,
                                                             overflow: TextOverflow.ellipsis,
