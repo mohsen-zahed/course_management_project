@@ -13,5 +13,6 @@ class ImagesPaths {
   static const String instagramIconPng = 'assets/images/instagram.png';
   static const String youtubeIconPng = 'assets/images/youtube.png';
   static const String telegramIconPng = 'assets/images/telegram.png';
+  static const String whatsappPng = 'assets/images/whatsapp.png';
   static const String noConnectionSvg = 'assets/images/no_connection.svg';
 }

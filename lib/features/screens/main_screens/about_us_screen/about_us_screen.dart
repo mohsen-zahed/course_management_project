@@ -2,6 +2,7 @@ import 'package:course_management_project/config/constants/colors/colors.dart';
 import 'package:course_management_project/config/constants/images_paths.dart';
 import 'package:course_management_project/helpers/theme_helpers.dart';
 import 'package:course_management_project/packages/flushbar_package/flushbar_package.dart';
+import 'package:course_management_project/packages/url_launcher_package/url_launcher_package.dart';
 import 'package:course_management_project/utils/app_theme.dart';
 import 'package:course_management_project/utils/media_query.dart';
 import 'package:flutter/material.dart';
@@ -131,6 +132,41 @@ class AboutUsScreen extends StatelessWidget {
               const LinksWidget(title: 'ایمیل آدرس:', value: 'info@tawanaacademy.com'),
               const SizedBox(height: 5),
               const LinksWidget(title: 'آدرس وبسایت:', value: 'www.tawanaacademy.com'),
+              const SizedBox(height: 15),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                decoration: BoxDecoration(
+                  color: kBlueCustomColor.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(7),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'جهت ثبت سفارش سیستم و اپلیکیشن کورس، میتوانید از طریق واتساپ با این شماره در ارتباط باشید:',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            UrlLauncherPackage.launchWhatsApp("https://wa.me/+93791526826");
+                            Clipboard.setData(const ClipboardData(text: '0791526826'));
+                          },
+                          child: Text('0791526826',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall!
+                                  .copyWith(decoration: TextDecoration.underline)),
+                        ),
+                        const SizedBox(width: 5),
+                        Image.asset(ImagesPaths.whatsappPng, height: sizeConstants.imageXXSmall - 2),
+                      ],
+                    )
+                  ],
+                ),
+              ),
               const SizedBox(height: 20),
             ],
           ),
